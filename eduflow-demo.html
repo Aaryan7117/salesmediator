@@ -329,9 +329,9 @@ Watch 2-min demo</a>
 // ============================================
 // CONFIGURATION — update before demo
 // ============================================
-const BACKEND_URL = 'http://10.237.216.50:8000'; // LOCAL: change to your laptop IP for same-WiFi demo
+const BACKEND_URL = 'http://127.0.0.1:8000'; // LOCAL: change to your laptop IP for same-WiFi demo
                                                   // DEPLOYED: change to your Render URL
-const ORG_SLUG = 'eduflow';
+const ORG_SLUG = 'eduflow-eaf7d9';
 
 // ============================================
 // STATE
@@ -348,11 +348,7 @@ const closeIcon = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
 // SESSION INIT
 // ============================================
 async function initSession() {
-  try {
-    const res = await fetch(BACKEND_URL + '/chat/' + ORG_SLUG + '/session/new');
-    const data = await res.json();
-    sessionId = data.session_id;
-  } catch (e) { console.error('Session init failed:', e); }
+  sessionId = 'demo-sess-' + Math.random().toString(36).substring(2, 10);
 }
 
 // ============================================
