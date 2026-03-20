@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     supabase_url: str
     supabase_service_key: str
     groq_api_key: str
+    groq_model: str = "llama-3.3-70b-versatile"
 
     # Optional: CORS origins (comma-separated). Defaults to allow all during dev.
     cors_origins: str = "*"

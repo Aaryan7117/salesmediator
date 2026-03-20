@@ -171,6 +171,8 @@ async def chat_with_org(org_slug: str, body: ChatMessageRequest, request: Reques
             groq_api_key=settings.groq_api_key,
         )
     except Exception as exc:
+        import logging
+        logging.getLogger(__name__).error(f"LLM generate_reply FAILED: {type(exc).__name__}: {exc}")
         reply = (
             f"I apologize, but I'm having trouble generating a response right now. "
             f"Please try again in a moment."

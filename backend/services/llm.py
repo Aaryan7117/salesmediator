@@ -4,7 +4,11 @@ Uses intent state and persona to adapt tone. Never hallucinate:
 only answers from KB content provided in the context.
 """
 
+import logging
 from groq import AsyncGroq
+from config import settings
+
+logger = logging.getLogger(__name__)
 
 STATE_INSTRUCTIONS = {
     "Exploring": (
@@ -60,16 +64,28 @@ async def generate_reply(
 
     # Include last 6 turns for context
     for turn in conversation_history[-6:]:
-        messages.append({"role": turn["role"], "content": turn["content"]})
+        role = turn["role"]
+        # Groq only accepts 'user', 'assistant', or 'system' roles
+        if role not in ("user", "assistant", "system"):
+            role = "user"
+        messages.append({"role": role, "content": turn["content"]})
 
     messages.append({"role": "user", "content": message + resource_context})
 
-    client = AsyncGroq(api_key=groq_api_key)
-    response = await client.chat.completions.create(
-        model="llama-3.1-70b-versatile",
-        messages=messages,
-        max_tokens=200,
-        temperature=0.4,
-    )
+    logger.info(f"Calling Groq model={settings.groq_model} with {len(messages)} messages")
 
-    return response.choices[0].message.content.strip()
+    client = AsyncGroq(api_key=groq_api_key)
+    try:
+        response = await client.chat.completions.create(
+            model=settings.groq_model,
+            messages=messages,
+            max_tokens=200,
+            temperature=0.4,
+        )
+        reply = response.choices[0].message.content.strip()
+        logger.info(f"Groq replied successfully: {reply[:80]}...")
+        return reply
+    except Exception as exc:
+        logger.error(f"Groq API error: {type(exc).__name__}: {exc}")
+        raise
+
