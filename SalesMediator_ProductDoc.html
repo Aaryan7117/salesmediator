@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SalesMediator — Product Documentation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #1a1a2e;
+      background: #fff;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 48px 56px;
+    }
+
+    /* ── Cover ── */
+    .cover {
+      text-align: center;
+      padding: 60px 0 50px;
+      border-bottom: 3px solid #6c63ff;
+      margin-bottom: 40px;
+    }
+    .cover .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #6c63ff 0%, #48cae4 100%);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .cover h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+    }
+    .cover h1 span { color: #6c63ff; }
+    .cover .tagline {
+      font-size: 15px;
+      color: #666;
+      font-weight: 300;
+      margin-bottom: 24px;
+    }
+    .cover .meta {
+      font-size: 12px;
+      color: #888;
+    }
+
+    /* ── Sections ── */
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin: 36px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e8e6ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h2 .num {
+      background: #6c63ff;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #3d3d6b;
+      margin: 20px 0 8px;
+    }
+
+    p { margin-bottom: 10px; color: #333; }
+
+    /* ── Architecture Box ── */
+    .arch-box {
+      background: #0d0d1a;
+      color: #a8ffd0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      line-height: 1.65;
+      padding: 24px 28px;
+      border-radius: 10px;
+      margin: 16px 0;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    /* ── Pipeline Steps ── */
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .pipeline-step {
+      background: #f5f4ff;
+      border-left: 3px solid #6c63ff;
+      border-radius: 6px;
+      padding: 10px 14px;
+    }
+    .pipeline-step .step-num {
+      font-size: 10px;
+      font-weight: 700;
+      color: #6c63ff;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 2px;
+    }
+    .pipeline-step .step-title { font-weight: 600; font-size: 12px; color: #1a1a2e; }
+    .pipeline-step .step-desc { font-size: 11.5px; color: #555; margin-top: 2px; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 12px;
+    }
+    thead tr { background: #6c63ff; color: #fff; }
+    thead th { padding: 9px 12px; text-align: left; font-weight: 600; }
+    tbody tr:nth-child(even) { background: #f5f4ff; }
+    tbody td { padding: 8px 12px; border-bottom: 1px solid #e8e6ff; }
+    .tag-no-auth { background: #e8f5e9; color: #2e7d32; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+    .tag-auth { background: #fff3e0; color: #e65100; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+    code { font-family: 'JetBrains Mono', monospace; background: #f0eeff; padding: 1px 5px; border-radius: 3px; font-size: 11px; color: #5a52c7; }
+
+    /* ── Signal Cards ── */
+    .signals {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .signal-card {
+      border: 1px solid #e0deff;
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #faf9ff;
+    }
+    .signal-card .label { font-size: 11px; font-weight: 600; color: #1a1a2e; }
+    .signal-card .weight { font-size: 18px; font-weight: 700; color: #6c63ff; }
+    .signal-card .desc { font-size: 10.5px; color: #777; margin-top: 2px; }
+
+    /* ── States ── */
+    .states { display: flex; gap: 12px; margin: 14px 0; }
+    .state-card {
+      flex: 1;
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+    .state-card.exploring { background: #e8f5e9; border: 1.5px solid #81c784; }
+    .state-card.comparing  { background: #fff3e0; border: 1.5px solid #ffb74d; }
+    .state-card.decision   { background: #fce4ec; border: 1.5px solid #e57373; }
+    .state-card .range { font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+    .state-card .name  { font-size: 14px; font-weight: 700; margin: 4px 0; }
+    .state-card .tone  { font-size: 11px; color: #555; }
+
+    /* ── Tech Stack ── */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .tech-card {
+      background: #faf9ff;
+      border: 1px solid #e0deff;
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .tech-card .layer { font-size: 10px; font-weight: 700; color: #6c63ff; text-transform: uppercase; letter-spacing: 1px; }
+    .tech-card .value { font-size: 12px; font-weight: 600; color: #1a1a2e; margin-top: 4px; }
+
+    /* ── Screen Map ── */
+    .screens {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .screen-group { border: 1px solid #e0deff; border-radius: 8px; overflow: hidden; }
+    .screen-group .group-title {
+      background: #6c63ff;
+      color: #fff;
+      font-weight: 600;
+      font-size: 11px;
+      padding: 7px 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .screen-group ul { list-style: none; padding: 10px 12px; }
+    .screen-group li { font-size: 11.5px; color: #333; padding: 3px 0; border-bottom: 1px solid #f0eeff; }
+    .screen-group li:last-child { border-bottom: none; }
+    .screen-group li::before { content: "▸ "; color: #6c63ff; font-size: 10px; }
+
+    /* ── Env Table ── */
+    .env-row td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #5a52c7; }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 11px;
+      color: #aaa;
+      border-top: 1px solid #e8e6ff;
+      padding-top: 20px;
+    }
+
+    /* ── Print ── */
+    @media print {
+      body { padding: 32px 40px; font-size: 12px; }
+      .cover { padding: 40px 0 36px; }
+      h2 { page-break-after: avoid; }
+      .arch-box { font-size: 10px; }
+      .pipeline, .tech-grid, .signals { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cover -->
+  <div class="cover">
+    <div class="badge">Hackathon Submission · March 2026</div>
+    <h1>Sales<span>Mediator</span></h1>
+    <div class="tagline">AI-Powered B2B Sales Consultant Platform</div>
+    <div class="meta">Product Documentation · Version 1.0</div>
+  </div>
+
+  <!-- 1. Overview -->
+  <h2><span class="num">1</span> Product Overview</h2>
+  <p><strong>SalesMediator</strong> is a multi-tenant, AI-powered B2B Sales Consultant platform that deploys a knowledgeable, intent-aware AI sales assistant directly on any company's website.</p>
+  <p><strong>Problem:</strong> B2B companies lose up to 70% of website leads because visitors can't get fast, accurate answers outside business hours. Traditional chatbots are scripted and unaware of the product. Human reps can't be available 24/7.</p>
+  <p><strong>Solution:</strong> SalesMediator gives every business a 24/7 AI rep that knows their product (via a custom knowledge base), scores buyer intent in real-time, adapts its tone to the buyer's stage, and auto-files hot leads into CRM systems the moment they're ready to convert.</p>
+
+  <!-- 2. System Architecture -->
+  <h2><span class="num">2</span> System Architecture & Flow</h2>
+  <div class="arch-box">BUYER (Website Visitor)
+        │
+        │  POST /chat/{org_slug}  (no auth required — public endpoint)
+        ▼
+┌────────────────────────── FastAPI Backend ──────────────────────────┐
+│                                                                     │
+│  Step 1  ►  Resolve Organisation by slug                            │
+│  Step 2  ►  Create / Fetch Lead Session (UUID-based)               │
+│  Step 3  ►  Score Intent (regex signals → 0–100 score)             │
+│  Step 4  ►  Detect Buyer Persona (Groq LLM, first 3 turns only)    │
+│  Step 5  ►  RAG KB Retrieval (vector similarity search, ChromaDB)  │
+│  Step 6  ►  Generate AI Reply (Groq LLM, grounded to KB)           │
+│  Step 7  ►  Calendly Suppression Gate (show at right moment)       │
+│  Step 8  ►  Fire CRM / GitHub Issues if score ≥ 76                 │
+│  Step 9  ►  Persist Lead to Supabase (full conversation JSON)      │
+│  Step 10 ►  Return structured JSON response                         │
+│                                                                     │
+│  ┌──────────────┐  ┌─────────────────┐  ┌────────────────────────┐ │
+│  │ ChromaDB     │  │  Groq LLM API   │  │ Supabase (PostgreSQL)  │ │
+│  │ Vector Store │  │ llama-3.1-70b   │  │ Auth + Database        │ │
+│  └──────────────┘  └─────────────────┘  └────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
+        │
+        ├──────► Frappe CRM (auto-lead creation at score ≥ 76)
+        └──────► GitHub Issues (lead tracking option)
+
+MOBILE APP (React Native · Expo)
+        │
+        │  JWT-authenticated REST API calls
+        ▼
+   Admin Dashboard ──── Sales Rep View ──── Integrations Settings</div>
+
+  <!-- 3. Intent Scoring -->
+  <h2><span class="num">3</span> Intent Scoring Engine</h2>
+  <p>Every buyer message is analysed in real-time using a regex-weighted signal matching engine. The cumulative score (0–100) determines the conversation state and triggers integrations.</p>
+  <div class="signals">
+    <div class="signal-card"><div class="weight">+25</div><div class="label">Timeline Mention</div><div class="desc">"deadline", "by Q3", "urgent", "ASAP"</div></div>
+    <div class="signal-card"><div class="weight">+20</div><div class="label">Competitor Compare</div><div class="desc">"vs", "versus", "better than", "alternative"</div></div>
+    <div class="signal-card"><div class="weight">+18</div><div class="label">Pricing Probe</div><div class="desc">"price", "cost", "budget", "how much", "ROI"</div></div>
+    <div class="signal-card"><div class="weight">+15</div><div class="label">Team Size</div><div class="desc">"50 users", "100 reps", "seats required"</div></div>
+    <div class="signal-card"><div class="weight">+15</div><div class="label">Demo Interest</div><div class="desc">"demo", "free trial", "pilot", "POC"</div></div>
+    <div class="signal-card"><div class="weight">+12</div><div class="label">Integration Query</div><div class="desc">"API", "CRM", "Salesforce", "webhook"</div></div>
+  </div>
+  <div class="states">
+    <div class="state-card exploring"><div class="range">0 – 40</div><div class="name">Exploring</div><div class="tone">Educational tone. One gentle clarifying question. No pricing.</div></div>
+    <div class="state-card comparing"><div class="range">41 – 75</div><div class="name">Comparing</div><div class="tone">Highlight differentiation. Share specs. No calendar push yet.</div></div>
+    <div class="state-card decision"><div class="range">76 – 100</div><div class="name">Decision-Ready</div><div class="tone">Warm & direct. Calendly shown. CRM auto-filed.</div></div>
+  </div>
+
+  <!-- 4. AI Pipeline -->
+  <h2><span class="num">4</span> AI Chat Pipeline (10-Step Engine)</h2>
+  <div class="pipeline">
+    <div class="pipeline-step"><div class="step-num">Step 1</div><div class="step-title">Org Resolution</div><div class="step-desc">Look up company by URL slug (/chat/acme-corp)</div></div>
+    <div class="pipeline-step"><div class="step-num">Step 2</div><div class="step-title">Session Management</div><div class="step-desc">Create or resume UUID-based lead session</div></div>
+    <div class="pipeline-step"><div class="step-num">Step 3</div><div class="step-title">Intent Scoring</div><div class="step-desc">Score buyer message, update cumulative 0–100 score</div></div>
+    <div class="pipeline-step"><div class="step-num">Step 4</div><div class="step-title">Persona Detection</div><div class="step-desc">Classify buyer type using Groq LLM (first 3 turns)</div></div>
+    <div class="pipeline-step"><div class="step-num">Step 5</div><div class="step-title">RAG KB Retrieval</div><div class="step-desc">Embed query, find top-1 matching KB chunk in ChromaDB</div></div>
+    <div class="pipeline-step"><div class="step-num">Step 6</div><div class="step-title">LLM Reply Generation</div><div class="step-desc">Generate grounded reply using Groq (llama-3.1-70b)</div></div>
+    <div class="pipeline-step"><div class="step-num">Step 7</div><div class="step-title">Calendly Gate</div><div class="step-desc">Show scheduling link only when score threshold is met</div></div>
+    <div class="pipeline-step"><div class="step-num">Step 8</div><div class="step-title">Integration Triggers</div><div class="step-desc">Auto-fire Frappe CRM & GitHub Issues at score ≥ 76</div></div>
+    <div class="pipeline-step"><div class="step-num">Step 9</div><div class="step-title">Lead Persistence</div><div class="step-desc">Save full conversation, signals, persona to Supabase</div></div>
+    <div class="pipeline-step"><div class="step-num">Step 10</div><div class="step-title">Structured Response</div><div class="step-desc">Return reply, intent state, resource card, Calendly flag</div></div>
+  </div>
+
+  <!-- 5. Tech Stack -->
+  <h2><span class="num">5</span> Technology Stack</h2>
+  <div class="tech-grid">
+    <div class="tech-card"><div class="layer">Backend</div><div class="value">Python 3.11 · FastAPI · Uvicorn</div></div>
+    <div class="tech-card"><div class="layer">LLM</div><div class="value">Groq Cloud — llama-3.1-70b-versatile</div></div>
+    <div class="tech-card"><div class="layer">Vector DB</div><div class="value">ChromaDB (local persistent)</div></div>
+    <div class="tech-card"><div class="layer">Embeddings</div><div class="value">sentence-transformers · all-MiniLM-L6-v2</div></div>
+    <div class="tech-card"><div class="layer">Database & Auth</div><div class="value">Supabase · PostgreSQL</div></div>
+    <div class="tech-card"><div class="layer">Mobile App</div><div class="value">React Native · Expo Router · TypeScript</div></div>
+    <div class="tech-card"><div class="layer">State Management</div><div class="value">Zustand</div></div>
+    <div class="tech-card"><div class="layer">CRM Integrations</div><div class="value">Frappe CRM · GitHub Issues</div></div>
+    <div class="tech-card"><div class="layer">Web Widget</div><div class="value">Vanilla HTML + Tailwind CSS (CDN)</div></div>
+  </div>
+
+  <!-- 6. API Endpoints -->
+  <h2><span class="num">6</span> API Endpoints</h2>
+  <table>
+    <thead><tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>POST</td><td><code>/auth/signup</code></td><td><span class="tag-no-auth">Public</span></td><td>Register new organisation + admin user</td></tr>
+      <tr><td>POST</td><td><code>/auth/login</code></td><td><span class="tag-no-auth">Public</span></td><td>Login, returns JWT token</td></tr>
+      <tr><td>POST</td><td><code>/chat/{org_slug}</code></td><td><span class="tag-no-auth">Public</span></td><td>Main buyer chat endpoint — full 10-step AI pipeline</td></tr>
+      <tr><td>GET</td><td><code>/leads</code></td><td><span class="tag-auth">JWT</span></td><td>List all leads for the authenticated organisation</td></tr>
+      <tr><td>GET</td><td><code>/leads/{id}</code></td><td><span class="tag-auth">JWT</span></td><td>Full lead detail including conversation history</td></tr>
+      <tr><td>POST</td><td><code>/kb/upload</code></td><td><span class="tag-auth">JWT</span></td><td>Upload PDF or CSV to seed the Knowledge Base</td></tr>
+      <tr><td>GET/PUT</td><td><code>/integrations</code></td><td><span class="tag-auth">JWT</span></td><td>Configure Calendly, Frappe CRM, GitHub settings</td></tr>
+      <tr><td>GET</td><td><code>/analytics</code></td><td><span class="tag-auth">JWT</span></td><td>Intent breakdown and lead funnel statistics</td></tr>
+      <tr><td>GET</td><td><code>/team</code></td><td><span class="tag-auth">JWT</span></td><td>List and manage team members (admin/rep roles)</td></tr>
+      <tr><td>GET</td><td><code>/health</code></td><td><span class="tag-no-auth">Public</span></td><td>Health check — returns <code>{"status": "ok"}</code></td></tr>
+    </tbody>
+  </table>
+
+  <!-- 7. Mobile App -->
+  <h2><span class="num">7</span> Mobile App Screens</h2>
+  <div class="screens">
+    <div class="screen-group">
+      <div class="group-title">🔒 Authentication</div>
+      <ul>
+        <li>Login Screen</li>
+        <li>Signup + Org Registration</li>
+      </ul>
+    </div>
+    <div class="screen-group">
+      <div class="group-title">🛡️ Admin Dashboard</div>
+      <ul>
+        <li>Dashboard Overview</li>
+        <li>Leads List (live intent scores)</li>
+        <li>Lead Detail + Conversation History</li>
+        <li>Knowledge Base Management</li>
+        <li>Team Management</li>
+        <li>Integration Settings</li>
+      </ul>
+    </div>
+    <div class="screen-group">
+      <div class="group-title">💼 Sales Rep View</div>
+      <ul>
+        <li>Rep Home (assigned leads)</li>
+        <li>Lead List with intent + persona</li>
+        <li>Lead conversation detail</li>
+      </ul>
+    </div>
+    <div class="screen-group">
+      <div class="group-title">🌐 Web Widget (Demo)</div>
+      <ul>
+        <li>Embedded chat widget</li>
+        <li>KB resource cards</li>
+        <li>Calendly scheduling prompt</li>
+        <li>Voice input support</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 8. Database -->
+  <h2><span class="num">8</span> Database Schema</h2>
+  <table>
+    <thead><tr><th>Table</th><th>Key Columns</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>orgs</code></td><td>id, name, slug, owner_id</td><td>Company registry — unique slug maps to chat endpoint</td></tr>
+      <tr><td><code>team_members</code></td><td>id, org_id, user_id, role</td><td>Users linked to orgs with admin or rep role</td></tr>
+      <tr><td><code>leads</code></td><td>id, org_id, session_id, intent_score, persona, conversation, signals</td><td>Full lead data including full conversation JSON array</td></tr>
+      <tr><td><code>integrations</code></td><td>org_id, calendly_link, frappe_url, frappe_token, github_repo</td><td>Per-org third-party integration configuration</td></tr>
+      <tr><td><code>kb_documents</code></td><td>id, org_id, filename, doc_id</td><td>Metadata of uploaded KB files (vectors in ChromaDB)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 9. Setup -->
+  <h2><span class="num">9</span> Setup & Installation</h2>
+  <h3>Prerequisites</h3>
+  <p>Python 3.10+ · Node.js 18+ · Supabase account · Groq API key</p>
+  <h3>Backend</h3>
+  <div class="arch-box">cd backend
+copy .env.example .env    # Fill in SUPABASE_URL, SUPABASE_SERVICE_KEY, GROQ_API_KEY
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+# API docs → http://localhost:8000/docs</div>
+  <h3>Mobile App</h3>
+  <div class="arch-box">cd mobile
+npm install
+npx expo start            # Scan QR with Expo Go app</div>
+  <h3>Web Demo</h3>
+  <p>Open <code>eduflow-demo.html</code> directly in any browser — no build step required.</p>
+
+  <!-- 10. Env Variables -->
+  <h2><span class="num">10</span> Environment Variables</h2>
+  <table class="env-row">
+    <thead><tr><th>Variable</th><th>Source</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>SUPABASE_URL</td><td>supabase.com → Settings → API</td><td>Database + Auth connection</td></tr>
+      <tr><td>SUPABASE_SERVICE_KEY</td><td>supabase.com → Settings → API</td><td>Server-side DB full access</td></tr>
+      <tr><td>GROQ_API_KEY</td><td>console.groq.com (free tier)</td><td>LLM inference (llama-3.1-70b)</td></tr>
+      <tr><td>CORS_ORIGINS</td><td>Your config</td><td>Allowed origins — use * for dev</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Footer -->
+  <div class="footer">
+    SalesMediator · Hackathon Submission · March 2026 · github.com/Aaryan7117/salesmediator
+  </div>
+
+  <!-- Print button (hidden in PDF) -->
+  <div style="text-align:center; margin-top: 24px;">
+    <button onclick="window.print()" style="background:#6c63ff;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;">
+      🖨️ Save as PDF (Ctrl+P → Save as PDF)
+    </button>
+  </div>
+
+</body>
+</html>
