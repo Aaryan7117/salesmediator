@@ -241,201 +241,74 @@
 
   <!-- Cover -->
   <div class="cover">
-    <div class="badge">Hackathon Submission · March 2026</div>
-    <h1>Sales<span>Mediator</span></h1>
-    <div class="tagline">AI-Powered B2B Sales Consultant Platform</div>
-    <div class="meta">Product Documentation · Version 1.0</div>
+    <div class="badge">Hackathon Submission · SRS Document</div>
+    <h1>Sales<span>Mediator</span> (SalesGen)</h1>
+    <div class="tagline">The Embedded AI Sales Framework</div>
+    <div class="meta">System Requirements Specification · March 2026</div>
   </div>
 
-  <!-- 1. Overview -->
-  <h2><span class="num">1</span> Product Overview</h2>
-  <p><strong>SalesMediator</strong> is a multi-tenant, AI-powered B2B Sales Consultant platform that deploys a knowledgeable, intent-aware AI sales assistant directly on any company's website.</p>
-  <p><strong>Problem:</strong> B2B companies lose up to 70% of website leads because visitors can't get fast, accurate answers outside business hours. Traditional chatbots are scripted and unaware of the product. Human reps can't be available 24/7.</p>
-  <p><strong>Solution:</strong> SalesMediator gives every business a 24/7 AI rep that knows their product (via a custom knowledge base), scores buyer intent in real-time, adapts its tone to the buyer's stage, and auto-files hot leads into CRM systems the moment they're ready to convert.</p>
+  <!-- 1. Project Overview -->
+  <h2><span class="num">1</span> Project Overview</h2>
+  <p><strong>SalesMediator</strong> is an end-to-end, multi-tenant AI Sales Engine framework built to solve the top-of-funnel lead leakage problem in B2B SaaS. Companies lose up to 70% of inbound leads because visitors cannot get immediate, highly contextual answers outside of business hours.</p>
+  <p>Our solution provides a highly modular, headless-ready architecture that deploys an autonomous AI sales assistant directly onto any client's website via drop-in integration. It replaces static forms and generic chatbots with an intelligent, asynchronous agent that scores buyer intent in real-time and autonomously books meetings and syncs data to CRMs.</p>
 
-  <!-- 2. System Architecture -->
-  <h2><span class="num">2</span> System Architecture & Flow</h2>
-  <div class="arch-box">BUYER (Website Visitor)
-        │
-        │  POST /chat/{org_slug}  (no auth required — public endpoint)
-        ▼
-┌────────────────────────── FastAPI Backend ──────────────────────────┐
-│                                                                     │
-│  Step 1  ►  Resolve Organisation by slug                            │
-│  Step 2  ►  Create / Fetch Lead Session (UUID-based)               │
-│  Step 3  ►  Score Intent (regex signals → 0–100 score)             │
-│  Step 4  ►  Detect Buyer Persona (Groq LLM, first 3 turns only)    │
-│  Step 5  ►  RAG KB Retrieval (vector similarity search, ChromaDB)  │
-│  Step 6  ►  Generate AI Reply (Groq LLM, grounded to KB)           │
-│  Step 7  ►  Calendly Suppression Gate (show at right moment)       │
-│  Step 8  ►  Fire CRM / GitHub Issues if score ≥ 76                 │
-│  Step 9  ►  Persist Lead to Supabase (full conversation JSON)      │
-│  Step 10 ►  Return structured JSON response                         │
-│                                                                     │
-│  ┌──────────────┐  ┌─────────────────┐  ┌────────────────────────┐ │
-│  │ ChromaDB     │  │  Groq LLM API   │  │ Supabase (PostgreSQL)  │ │
-│  │ Vector Store │  │ llama-3.1-70b   │  │ Auth + Database        │ │
-│  └──────────────┘  └─────────────────┘  └────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────────┘
-        │
-        ├──────► Frappe CRM (auto-lead creation at score ≥ 76)
-        └──────► GitHub Issues (lead tracking option)
-
-MOBILE APP (React Native · Expo)
-        │
-        │  JWT-authenticated REST API calls
-        ▼
-   Admin Dashboard ──── Sales Rep View ──── Integrations Settings</div>
-
-  <!-- 3. Intent Scoring -->
-  <h2><span class="num">3</span> Intent Scoring Engine</h2>
-  <p>Every buyer message is analysed in real-time using a regex-weighted signal matching engine. The cumulative score (0–100) determines the conversation state and triggers integrations.</p>
-  <div class="signals">
-    <div class="signal-card"><div class="weight">+25</div><div class="label">Timeline Mention</div><div class="desc">"deadline", "by Q3", "urgent", "ASAP"</div></div>
-    <div class="signal-card"><div class="weight">+20</div><div class="label">Competitor Compare</div><div class="desc">"vs", "versus", "better than", "alternative"</div></div>
-    <div class="signal-card"><div class="weight">+18</div><div class="label">Pricing Probe</div><div class="desc">"price", "cost", "budget", "how much", "ROI"</div></div>
-    <div class="signal-card"><div class="weight">+15</div><div class="label">Team Size</div><div class="desc">"50 users", "100 reps", "seats required"</div></div>
-    <div class="signal-card"><div class="weight">+15</div><div class="label">Demo Interest</div><div class="desc">"demo", "free trial", "pilot", "POC"</div></div>
-    <div class="signal-card"><div class="weight">+12</div><div class="label">Integration Query</div><div class="desc">"API", "CRM", "Salesforce", "webhook"</div></div>
-  </div>
-  <div class="states">
-    <div class="state-card exploring"><div class="range">0 – 40</div><div class="name">Exploring</div><div class="tone">Educational tone. One gentle clarifying question. No pricing.</div></div>
-    <div class="state-card comparing"><div class="range">41 – 75</div><div class="name">Comparing</div><div class="tone">Highlight differentiation. Share specs. No calendar push yet.</div></div>
-    <div class="state-card decision"><div class="range">76 – 100</div><div class="name">Decision-Ready</div><div class="tone">Warm & direct. Calendly shown. CRM auto-filed.</div></div>
-  </div>
-
-  <!-- 4. AI Pipeline -->
-  <h2><span class="num">4</span> AI Chat Pipeline (10-Step Engine)</h2>
+  <!-- 2. Features & Functionalities -->
+  <h2><span class="num">2</span> Features & Functionalities</h2>
   <div class="pipeline">
-    <div class="pipeline-step"><div class="step-num">Step 1</div><div class="step-title">Org Resolution</div><div class="step-desc">Look up company by URL slug (/chat/acme-corp)</div></div>
-    <div class="pipeline-step"><div class="step-num">Step 2</div><div class="step-title">Session Management</div><div class="step-desc">Create or resume UUID-based lead session</div></div>
-    <div class="pipeline-step"><div class="step-num">Step 3</div><div class="step-title">Intent Scoring</div><div class="step-desc">Score buyer message, update cumulative 0–100 score</div></div>
-    <div class="pipeline-step"><div class="step-num">Step 4</div><div class="step-title">Persona Detection</div><div class="step-desc">Classify buyer type using Groq LLM (first 3 turns)</div></div>
-    <div class="pipeline-step"><div class="step-num">Step 5</div><div class="step-title">RAG KB Retrieval</div><div class="step-desc">Embed query, find top-1 matching KB chunk in ChromaDB</div></div>
-    <div class="pipeline-step"><div class="step-num">Step 6</div><div class="step-title">LLM Reply Generation</div><div class="step-desc">Generate grounded reply using Groq (llama-3.1-70b)</div></div>
-    <div class="pipeline-step"><div class="step-num">Step 7</div><div class="step-title">Calendly Gate</div><div class="step-desc">Show scheduling link only when score threshold is met</div></div>
-    <div class="pipeline-step"><div class="step-num">Step 8</div><div class="step-title">Integration Triggers</div><div class="step-desc">Auto-fire Frappe CRM & GitHub Issues at score ≥ 76</div></div>
-    <div class="pipeline-step"><div class="step-num">Step 9</div><div class="step-title">Lead Persistence</div><div class="step-desc">Save full conversation, signals, persona to Supabase</div></div>
-    <div class="pipeline-step"><div class="step-num">Step 10</div><div class="step-title">Structured Response</div><div class="step-desc">Return reply, intent state, resource card, Calendly flag</div></div>
+    <div class="pipeline-step"><div class="step-num">Feature 1</div><div class="step-title">Dynamic NLP Intent Engine</div><div class="step-desc">A proprietary regex-weighted NLP engine calculates the buyer's temperature (Exploring, Comparing, Decision-Ready) on every message, dynamically restricting or empowering the AI's sales tactics.</div></div>
+    <div class="pipeline-step"><div class="step-num">Feature 2</div><div class="step-title">High-Performance RAG Pipeline</div><div class="step-desc">Utilizes a local ChromaDB instance and HuggingFace sentence-transformers mapping directly to the company's knowledge base to guarantee zero-hallucination, perfectly grounded answers.</div></div>
+    <div class="pipeline-step"><div class="step-num">Feature 3</div><div class="step-title">Zero-Touch CRM Webhooks</div><div class="step-desc">The exact millisecond a buyer hits 100% intent, the backend automatically intercepts the flow to trigger Frappe CRM lead injections and Calendly booking modals without any human intervention.</div></div>
+    <div class="pipeline-step"><div class="step-num">Feature 4</div><div class="step-title">React Native Mobile Dashboard</div><div class="step-desc">A native iOS/Android control center (built with Expo & Zustand) allowing sales reps to configure API keys, monitor live AI transcripts, and track lead KPIs remotely.</div></div>
+    <div class="pipeline-step"><div class="step-num">Feature 5</div><div class="step-title">Multi-Tenant Architecture</div><div class="step-desc">Supabase PostgreSQL manages fully segregated organizations. A single unified backend serves distinct, custom-tailored AI agents simultaneously via unique organisation URL slugs.</div></div>
+    <div class="pipeline-step"><div class="step-num">Feature 6</div><div class="step-title">Web Component Widget</div><div class="step-desc">A vanilla HTML/JS and Tailwind frontend that acts as a drop-in component, featuring markdown rendering, voice input support, and real-time typing indicators.</div></div>
   </div>
 
-  <!-- 5. Tech Stack -->
-  <h2><span class="num">5</span> Technology Stack</h2>
-  <div class="tech-grid">
-    <div class="tech-card"><div class="layer">Backend</div><div class="value">Python 3.11 · FastAPI · Uvicorn</div></div>
-    <div class="tech-card"><div class="layer">LLM</div><div class="value">Groq Cloud — llama-3.1-70b-versatile</div></div>
-    <div class="tech-card"><div class="layer">Vector DB</div><div class="value">ChromaDB (local persistent)</div></div>
-    <div class="tech-card"><div class="layer">Embeddings</div><div class="value">sentence-transformers · all-MiniLM-L6-v2</div></div>
-    <div class="tech-card"><div class="layer">Database & Auth</div><div class="value">Supabase · PostgreSQL</div></div>
-    <div class="tech-card"><div class="layer">Mobile App</div><div class="value">React Native · Expo Router · TypeScript</div></div>
-    <div class="tech-card"><div class="layer">State Management</div><div class="value">Zustand</div></div>
-    <div class="tech-card"><div class="layer">CRM Integrations</div><div class="value">Frappe CRM · GitHub Issues</div></div>
-    <div class="tech-card"><div class="layer">Web Widget</div><div class="value">Vanilla HTML + Tailwind CSS (CDN)</div></div>
-  </div>
-
-  <!-- 6. API Endpoints -->
-  <h2><span class="num">6</span> API Endpoints</h2>
-  <table>
-    <thead><tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr></thead>
-    <tbody>
-      <tr><td>POST</td><td><code>/auth/signup</code></td><td><span class="tag-no-auth">Public</span></td><td>Register new organisation + admin user</td></tr>
-      <tr><td>POST</td><td><code>/auth/login</code></td><td><span class="tag-no-auth">Public</span></td><td>Login, returns JWT token</td></tr>
-      <tr><td>POST</td><td><code>/chat/{org_slug}</code></td><td><span class="tag-no-auth">Public</span></td><td>Main buyer chat endpoint — full 10-step AI pipeline</td></tr>
-      <tr><td>GET</td><td><code>/leads</code></td><td><span class="tag-auth">JWT</span></td><td>List all leads for the authenticated organisation</td></tr>
-      <tr><td>GET</td><td><code>/leads/{id}</code></td><td><span class="tag-auth">JWT</span></td><td>Full lead detail including conversation history</td></tr>
-      <tr><td>POST</td><td><code>/kb/upload</code></td><td><span class="tag-auth">JWT</span></td><td>Upload PDF or CSV to seed the Knowledge Base</td></tr>
-      <tr><td>GET/PUT</td><td><code>/integrations</code></td><td><span class="tag-auth">JWT</span></td><td>Configure Calendly, Frappe CRM, GitHub settings</td></tr>
-      <tr><td>GET</td><td><code>/analytics</code></td><td><span class="tag-auth">JWT</span></td><td>Intent breakdown and lead funnel statistics</td></tr>
-      <tr><td>GET</td><td><code>/team</code></td><td><span class="tag-auth">JWT</span></td><td>List and manage team members (admin/rep roles)</td></tr>
-      <tr><td>GET</td><td><code>/health</code></td><td><span class="tag-no-auth">Public</span></td><td>Health check — returns <code>{"status": "ok"}</code></td></tr>
-    </tbody>
-  </table>
-
-  <!-- 7. Mobile App -->
-  <h2><span class="num">7</span> Mobile App Screens</h2>
-  <div class="screens">
-    <div class="screen-group">
-      <div class="group-title">🔒 Authentication</div>
-      <ul>
-        <li>Login Screen</li>
-        <li>Signup + Org Registration</li>
-      </ul>
-    </div>
-    <div class="screen-group">
-      <div class="group-title">🛡️ Admin Dashboard</div>
-      <ul>
-        <li>Dashboard Overview</li>
-        <li>Leads List (live intent scores)</li>
-        <li>Lead Detail + Conversation History</li>
-        <li>Knowledge Base Management</li>
-        <li>Team Management</li>
-        <li>Integration Settings</li>
-      </ul>
-    </div>
-    <div class="screen-group">
-      <div class="group-title">💼 Sales Rep View</div>
-      <ul>
-        <li>Rep Home (assigned leads)</li>
-        <li>Lead List with intent + persona</li>
-        <li>Lead conversation detail</li>
-      </ul>
-    </div>
-    <div class="screen-group">
-      <div class="group-title">🌐 Web Widget (Demo)</div>
-      <ul>
-        <li>Embedded chat widget</li>
-        <li>KB resource cards</li>
-        <li>Calendly scheduling prompt</li>
-        <li>Voice input support</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- 8. Database -->
-  <h2><span class="num">8</span> Database Schema</h2>
-  <table>
-    <thead><tr><th>Table</th><th>Key Columns</th><th>Purpose</th></tr></thead>
-    <tbody>
-      <tr><td><code>orgs</code></td><td>id, name, slug, owner_id</td><td>Company registry — unique slug maps to chat endpoint</td></tr>
-      <tr><td><code>team_members</code></td><td>id, org_id, user_id, role</td><td>Users linked to orgs with admin or rep role</td></tr>
-      <tr><td><code>leads</code></td><td>id, org_id, session_id, intent_score, persona, conversation, signals</td><td>Full lead data including full conversation JSON array</td></tr>
-      <tr><td><code>integrations</code></td><td>org_id, calendly_link, frappe_url, frappe_token, github_repo</td><td>Per-org third-party integration configuration</td></tr>
-      <tr><td><code>kb_documents</code></td><td>id, org_id, filename, doc_id</td><td>Metadata of uploaded KB files (vectors in ChromaDB)</td></tr>
-    </tbody>
-  </table>
-
-  <!-- 9. Setup -->
-  <h2><span class="num">9</span> Setup & Installation</h2>
+  <!-- 3. Setup & Installation Guide -->
+  <h2><span class="num">3</span> Setup & Installation Guide</h2>
   <h3>Prerequisites</h3>
-  <p>Python 3.10+ · Node.js 18+ · Supabase account · Groq API key</p>
-  <h3>Backend</h3>
+  <p>Python 3.10+, Node.js 18+, a free Supabase account, and a free Groq API key.</p>
+  <h3>Backend (FastAPI)</h3>
   <div class="arch-box">cd backend
 copy .env.example .env    # Fill in SUPABASE_URL, SUPABASE_SERVICE_KEY, GROQ_API_KEY
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
-# API docs → http://localhost:8000/docs</div>
-  <h3>Mobile App</h3>
+# Backend runs at http://localhost:8000</div>
+  <h3>Mobile App (React Native)</h3>
   <div class="arch-box">cd mobile
 npm install
-npx expo start            # Scan QR with Expo Go app</div>
-  <h3>Web Demo</h3>
-  <p>Open <code>eduflow-demo.html</code> directly in any browser — no build step required.</p>
+npx expo start --clear    # Scan the QR code with your iPhone/Android using the Expo Go app</div>
+  <h3>Web Demo (Customer UI)</h3>
+  <p>Open <code>eduflow-demo.html</code> directly in any web browser to experience the end-customer chat interface.</p>
 
-  <!-- 10. Env Variables -->
-  <h2><span class="num">10</span> Environment Variables</h2>
-  <table class="env-row">
-    <thead><tr><th>Variable</th><th>Source</th><th>Purpose</th></tr></thead>
-    <tbody>
-      <tr><td>SUPABASE_URL</td><td>supabase.com → Settings → API</td><td>Database + Auth connection</td></tr>
-      <tr><td>SUPABASE_SERVICE_KEY</td><td>supabase.com → Settings → API</td><td>Server-side DB full access</td></tr>
-      <tr><td>GROQ_API_KEY</td><td>console.groq.com (free tier)</td><td>LLM inference (llama-3.1-70b)</td></tr>
-      <tr><td>CORS_ORIGINS</td><td>Your config</td><td>Allowed origins — use * for dev</td></tr>
-    </tbody>
-  </table>
+  <!-- 4. Future Ideas to be Implemented -->
+  <h2><span class="num">4</span> Future Ideas to be Implemented</h2>
+  <div class="pipeline">
+    <div class="pipeline-step"><div class="step-num">Idea 1</div><div class="step-title">Live Voice Call Handover</div><div class="step-desc">Integrating WebRTC to allow the buyer to click a button and seamlessly transition from texting the AI to a live VoIP audio call with a human sales rep.</div></div>
+    <div class="pipeline-step"><div class="step-num">Idea 2</div><div class="step-title">Shopify/Stripe Direct Checkout</div><div class="step-desc">Allowing the AI to securely collect credit card payments and process direct B2B subscription upgrades natively inside the chat widget using Stripe Elements.</div></div>
+    <div class="pipeline-step"><div class="step-num">Idea 3</div><div class="step-title">Multi-Agent Inter-communication</div><div class="step-desc">Deploying an internal 'manager' AI that reviews the performance of the 'sales' AI globally to auto-suggest improvements to the organisation's knowledge base.</div></div>
+  </div>
+
+  <!-- 5. Novelty of Your Solution -->
+  <h2><span class="num">5</span> Novelty of Your Solution</h2>
+  <p>Most existing solutions are simply wrappers around OpenAI's API that act as disconnected chatbots.</p>
+  <p><strong>Our approach is entirely novel because it is a closed-loop framework:</strong> We engineered a real-time, mathematical Intent Scoring NLP engine that intercepts the semantic layer. By mathematically classifying the user's buying temperature, the system autonomously controls the AI persona via dynamic prompt injection. Furthermore, by building a completely native React Native dashboard, we brought enterprise-grade CRM monitoring directly into the pockets of on-the-go sales reps, bridging the gap between website AI and human workforce mobility.</p>
+
+  <!-- 6. Screenshots & Demo -->
+  <h2><span class="num">6</span> Screenshots / Demo</h2>
+  <p>We have prepared a comprehensive video walkthrough and a high-resolution screenshot gallery demonstrating the active Web UI, Mobile App, and Frappe CRM Webhook integration.</p>
+  <div class="arch-box" style="text-align: center; font-size: 14px; padding: 15px;">
+    🔗 <strong>Access the Full Demo & Screenshot Drive Here:</strong><br><br>
+    <a href="https://drive.google.com/drive/folders/1gy982uQ4nUVLagHHA4cS8zNtpo6mOWu6" target="_blank" style="color: #48cae4; text-decoration: none; font-weight: bold;">https://drive.google.com/drive/folders/1gy982uQ4nUVLagHHA4cS8zNtpo6mOWu6</a>
+  </div>
+
+  <!-- 7. Environment Variables Note -->
+  <h2><span class="num">7</span> Environment Variables</h2>
+  <p>As per the submission requirements, the secret credentials and environment configuration variables have been placed into a standalone <code>env_variables.txt</code> file.</p>
+  <p><strong>This text file is included alongside our submission video in the Google Drive link provided above.</strong> Please use those keys to safely replicate our local Supabase and Groq cloud connections.</p>
 
   <!-- Footer -->
   <div class="footer">
-    SalesMediator · Hackathon Submission · March 2026 · github.com/Aaryan7117/salesmediator
+    SalesMediator (SalesGen) · Hackathon Submission SRS · March 2026
   </div>
 
   <!-- Print button (hidden in PDF) -->

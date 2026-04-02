@@ -128,12 +128,8 @@ def ingest_csv(
     if not rows_text:
         return 0
 
-    # Group rows into chunks of ~5 rows each for better context
-    chunk_size = 5
-    chunks: list[str] = []
-    for i in range(0, len(rows_text), chunk_size):
-        batch = rows_text[i : i + chunk_size]
-        chunks.append("\n".join(batch))
+    # Make each Q&A row its own distinct chunk for precise semantic search
+    chunks = rows_text
 
     collection = chroma_client.get_or_create_collection(f"org_{org_id}")
 

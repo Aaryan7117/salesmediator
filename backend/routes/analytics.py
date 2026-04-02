@@ -83,3 +83,37 @@ async def get_analytics(request: Request):
         decision_ready_count=decision_ready_count,
         conversion_rate=conversion_rate,
     )
+
+
+@router.get("/timeline/{lead_id}")
+async def get_intent_timeline(lead_id: str, request: Request):
+    """
+    Intent score history for a specific lead — used for timeline charts.
+    Returns an array of {turn_number, score_before, score_after, signals, created_at}.
+    """
+    token = _extract_token(request)
+    user = _get_user_from_token(token)
+
+    sb = get_supabase()
+
+    # Verify lead belongs to this org
+    lead_result = (
+        sb.table("leads")
+        .select("id")
+        .eq("id", lead_id)
+        .eq("org_id", user["org_id"])
+        .execute()
+    )
+    if not lead_result.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lead not found.")
+
+    # Fetch intent history
+    history = (
+        sb.table("intent_history")
+        .select("turn_number, score_before, score_after, signals, created_at")
+        .eq("lead_id", lead_id)
+        .order("turn_number")
+        .execute()
+    )
+
+    return history.data or []

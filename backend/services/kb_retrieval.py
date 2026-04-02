@@ -60,6 +60,7 @@ def query_kb(
         "source_file": results["metadatas"][0][0].get("filename", ""),
         "chunk_id": results["ids"][0][0],
         "relevance_score": relevance,
+        "content": results["documents"][0][0],
         "excerpt": results["documents"][0][0][:200],
     }
 

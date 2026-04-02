@@ -8,9 +8,10 @@ import re
 
 SIGNAL_WEIGHTS: dict[str, int] = {
     r"(need\s+this\s+by|deadline|before\s+end|q[1-4]\b|next\s+(month|quarter)|urgent|asap)": 25,
+    r"(schedule\s+a\s+call|book\s+a\s+meeting|speak\s+with\s+sales|talk\s+to\s+sales|sales\s+team|let's\s+do\s+it|have\s+a\s+meet)": 80,
     r"(compar|vs\.?|versus|better\s+than|competitor|alternative|other\s+option|how\s+do\s+you\s+stack)": 20,
-    r"(pric|cost|budget|how\s+much|roi|return\s+on|invest|afford)": 18,
-    r"(\b\d{1,4}\s*(people|reps|users|seats|employees|staff|team\s+members))": 15,
+    r"(pric|cost|budget|how\s+much|roi|return\s+on|invest|afford)": 45,
+    r"(\b\d{1,4}\s*(people|reps|users|seats|employees|staff|team\s+members))": 35,
     r"(demo|free\s+trial|pilot|proof\s+of\s+concept|\bpoc\b|test\s+it\s+out)": 15,
     r"(integrat|api\b|crm\b|connect|sync\b|plugin|webhook|salesforce|hubspot)": 12,
     r"^\s*(ok|okay|sure|thanks|got\s+it|understood|cool|noted)\s*$": -5,
@@ -19,6 +20,7 @@ SIGNAL_WEIGHTS: dict[str, int] = {
 
 SIGNAL_LABELS: dict[str, str] = {
     r"(need\s+this\s+by|deadline|before\s+end|q[1-4]\b|next\s+(month|quarter)|urgent|asap)": "Timeline mentioned",
+    r"(schedule\s+a\s+call|book\s+a\s+meeting|speak\s+with\s+sales|talk\s+to\s+sales|sales\s+team|let's\s+do\s+it|have\s+a\s+meet)": "Sales call requested",
     r"(compar|vs\.?|versus|better\s+than|competitor|alternative|other\s+option|how\s+do\s+you\s+stack)": "Competitor compare",
     r"(pric|cost|budget|how\s+much|roi|return\s+on|invest|afford)": "Pricing probe",
     r"(\b\d{1,4}\s*(people|reps|users|seats|employees|staff|team\s+members))": "Team size mentioned",

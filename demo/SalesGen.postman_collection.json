@@ -1,0 +1,91 @@
+{
+  "info": {
+    "_postman_id": "b3e32e85-451e-4bfc-a1df-9d587f17b9b1",
+    "name": "SalesGen End-to-End Demo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Signup (Admin)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@salesgen.ai\",\n  \"password\": \"securepassword123\",\n  \"org_name\": \"SalesGen Demo Corp\",\n  \"full_name\": \"Demo Admin\"\n}" },
+        "url": { "raw": "http://localhost:8000/auth/signup", "protocol": "http", "host": [ "localhost" ], "port": "8000", "path": [ "auth", "signup" ] }
+      }
+    },
+    {
+      "name": "2. Login (Get JWT)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@salesgen.ai\",\n  \"password\": \"securepassword123\"\n}" },
+        "url": { "raw": "http://localhost:8000/auth/login", "protocol": "http", "host": [ "localhost" ], "port": "8000", "path": [ "auth", "login" ] }
+      }
+    },
+    {
+      "name": "3. Upload Knowledge Base",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Authorization", "value": "Bearer {{jwt_token}}" } ],
+        "body": { "mode": "formdata", "formdata": [ { "key": "file", "type": "file", "src": "demo_kb.csv" } ] },
+        "url": { "raw": "http://localhost:8000/kb/upload", "protocol": "http", "host": [ "localhost" ], "port": "8000", "path": [ "kb", "upload" ] }
+      }
+    },
+    {
+      "name": "4. Configure Integrations",
+      "request": {
+        "method": "PUT",
+        "header": [ 
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"calendly_link\": \"https://calendly.com/your-sales-rep/15min\",\n  \"frappe_url\": \"https://your-crm.frappe.cloud\",\n  \"frappe_token\": \"token your_api_key:your_secret\",\n  \"github_repo\": \"Aaryan7117/salesmediator\",\n  \"github_pat\": \"github_pat_11A...\"\n}" },
+        "url": { "raw": "http://localhost:8000/integrations", "protocol": "http", "host": [ "localhost" ], "port": "8000", "path": [ "integrations" ] }
+      }
+    },
+    {
+      "name": "5. Chat (Exploring - Low Intent)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"message\": \"Hi, I am just exploring. What does SalesGen actually do?\",\n  \"session_id\": \"demo-postman-001\"\n}" },
+        "url": { "raw": "http://localhost:8000/chat/salesgen-demo-corp", "protocol": "http", "host": [ "localhost" ], "port": "8000", "path": [ "chat", "salesgen-demo-corp" ] }
+      }
+    },
+    {
+      "name": "6. Chat (Comparing - Medium Intent)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"message\": \"How does it compare to a normal chatbot? And what is the pricing?\",\n  \"session_id\": \"demo-postman-001\"\n}" },
+        "url": { "raw": "http://localhost:8000/chat/salesgen-demo-corp", "protocol": "http", "host": [ "localhost" ], "port": "8000", "path": [ "chat", "salesgen-demo-corp" ] }
+      }
+    },
+    {
+      "name": "7. Chat (Decision - High Intent)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"message\": \"We have a team of 50 reps and we need to deploy this by Q3. Can we get a demo?\",\n  \"session_id\": \"demo-postman-001\"\n}" },
+        "url": { "raw": "http://localhost:8000/chat/salesgen-demo-corp", "protocol": "http", "host": [ "localhost" ], "port": "8000", "path": [ "chat", "salesgen-demo-corp" ] }
+      }
+    },
+    {
+      "name": "8. View All Leads (Admin)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{jwt_token}}" } ],
+        "url": { "raw": "http://localhost:8000/leads", "protocol": "http", "host": [ "localhost" ], "port": "8000", "path": [ "leads" ] }
+      }
+    },
+    {
+      "name": "9. View Analytics (Admin)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{jwt_token}}" } ],
+        "url": { "raw": "http://localhost:8000/analytics", "protocol": "http", "host": [ "localhost" ], "port": "8000", "path": [ "analytics" ] }
+      }
+    }
+  ]
+}

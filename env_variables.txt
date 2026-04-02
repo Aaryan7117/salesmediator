@@ -1,0 +1,23 @@
+# ============================================================
+# SalesMediator — Environment Variables
+# Required for running the backend server
+# ============================================================
+# NOTE: This file is submitted as part of the hackathon submission
+# as per the requirement to submit environment variables separately.
+# Replace placeholder values with your actual credentials.
+# ============================================================
+
+# Supabase Configuration
+# Get these from: https://supabase.com → Settings → API
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...your-service-role-key
+
+# Groq LLM API Key
+# Get this from: https://console.groq.com → API Keys (Free tier available)
+# Model used: llama-3.1-70b-versatile
+GROQ_API_KEY=gsk_your_groq_api_key_here
+
+# CORS Configuration
+# For local development: use * or http://localhost:8000
+# For production: set to your deployed frontend URL(s)
+CORS_ORIGINS=*

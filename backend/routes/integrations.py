@@ -63,6 +63,8 @@ async def get_integrations(request: Request):
         github_repo=row.get("github_repo"),
         github_pat_set=bool(row.get("github_pat")),
         calendly_link=row.get("calendly_link"),
+        slack_webhook_set=bool(row.get("slack_webhook")),
+        webhook_url=row.get("webhook_url"),
     )
 
 
@@ -90,6 +92,10 @@ async def update_integrations(body: IntegrationsUpdateRequest, request: Request)
         update_data["github_pat"] = body.github_pat
     if body.calendly_link is not None:
         update_data["calendly_link"] = body.calendly_link
+    if body.slack_webhook is not None:
+        update_data["slack_webhook"] = body.slack_webhook
+    if body.webhook_url is not None:
+        update_data["webhook_url"] = body.webhook_url
 
     # Check if row exists
     existing = sb.table("integrations").select("id").eq("org_id", org_id).execute()
@@ -110,4 +116,6 @@ async def update_integrations(body: IntegrationsUpdateRequest, request: Request)
         github_repo=row.get("github_repo"),
         github_pat_set=bool(row.get("github_pat")),
         calendly_link=row.get("calendly_link"),
+        slack_webhook_set=bool(row.get("slack_webhook")),
+        webhook_url=row.get("webhook_url"),
     )

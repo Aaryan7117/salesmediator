@@ -163,10 +163,12 @@ class LeadListItem(BaseModel):
 # ---------------------------------------------------------------------------
 class IntegrationsResponse(BaseModel):
     frappe_url: str | None = None
-    frappe_token_set: bool = False  # True if token exists, never return raw value
+    frappe_token_set: bool = False
     github_repo: str | None = None
     github_pat_set: bool = False
     calendly_link: str | None = None
+    slack_webhook_set: bool = False
+    webhook_url: str | None = None
 
 
 class IntegrationsUpdateRequest(BaseModel):
@@ -175,6 +177,8 @@ class IntegrationsUpdateRequest(BaseModel):
     github_repo: str | None = None
     github_pat: str | None = None
     calendly_link: str | None = None
+    slack_webhook: str | None = None
+    webhook_url: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -192,3 +196,14 @@ class AnalyticsResponse(BaseModel):
 # ---------------------------------------------------------------------------
 class SessionResponse(BaseModel):
     lead: LeadResponse | None = None
+
+
+# ---------------------------------------------------------------------------
+# Intent History (timeline charts)
+# ---------------------------------------------------------------------------
+class IntentHistoryItem(BaseModel):
+    turn_number: int
+    score_before: int
+    score_after: int
+    signals: list[str] = []
+    created_at: datetime | None = None

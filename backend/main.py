@@ -11,9 +11,11 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
 
 from config import settings
-from routes import auth, kb, chat, session, leads, team, integrations, analytics
+from routes import auth, kb, chat, session, leads, team, integrations, analytics, widget_config, live
 
 logger = logging.getLogger(__name__)
 
@@ -67,9 +69,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="salesrun API",
+    title="SalesGen API",
     description="AI Sales Consultant backend — multi-tenant, KB-powered chat with intent scoring.",
-    version="1.0.0",
+    version="2.0.0",
     lifespan=lifespan,
 )
 
@@ -112,6 +114,13 @@ app.include_router(leads.router, prefix="/leads", tags=["Leads"])
 app.include_router(team.router, prefix="/team", tags=["Team"])
 app.include_router(integrations.router, prefix="/integrations", tags=["Integrations"])
 app.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
+app.include_router(widget_config.router, prefix="/widget-config", tags=["Widget Config"])
+app.include_router(live.router, prefix="/live", tags=["Live Streaming"])
+
+# Serve widget.js as a static file
+widget_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "widget")
+if os.path.exists(widget_dir):
+    app.mount("/widget", StaticFiles(directory=widget_dir), name="widget")
 
 
 # ---------------------------------------------------------------------------

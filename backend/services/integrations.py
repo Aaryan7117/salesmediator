@@ -24,22 +24,33 @@ async def fire_frappe(lead: dict, frappe_url: str, frappe_token: str) -> None:
     Create a Lead record in Frappe CRM.
     Fails silently — CRM errors must never surface to the buyer.
     """
+    import logging
+    logger = logging.getLogger(__name__)
     try:
         async with httpx.AsyncClient(timeout=10) as client:
-            await client.post(
-                f"{frappe_url}/api/resource/Lead",
-                headers={"Authorization": f"token {frappe_token}"},
+            res = await client.post(
+                f"{frappe_url}/api/resource/CRM Lead",
+                headers={
+                    "Authorization": frappe_token,
+                    "Accept": "application/json",
+                },
                 json={
-                    "lead_name": lead.get("persona", "Inbound Lead"),
-                    "custom_intent_score": lead["intent_score"],
-                    "custom_persona": lead["persona"],
-                    "custom_intent_state": lead["intent_state"],
-                    "custom_signals": ", ".join(lead.get("signals", [])),
-                    "custom_session_id": str(lead["session_id"]),
+                    "first_name": lead.get("persona", "Inbound"),
+                    "last_name": "Lead",
+                    "email": f"{lead['session_id'][:8]}@example.com",
+                    "description": (
+                        f"Intent Score: {lead['intent_score']}\n"
+                        f"Persona: {lead['persona']}\n"
+                        f"State: {lead['intent_state']}\n"
+                        f"Signals: {', '.join(lead.get('signals', []))}\n"
+                        f"Session: {lead['session_id']}"
+                    ),
                 },
             )
-    except Exception:
-        pass  # Never surface CRM errors to the buyer
+            if res.status_code not in [200, 201]:
+                logger.error(f"Frappe Integration Error: {res.status_code} - {res.text}")
+    except Exception as e:
+        logger.error(f"Frappe Integration Failed: {e}")
 
 
 async def fire_github(lead: dict, github_repo: str, github_pat: str) -> str | None:
