@@ -21,11 +21,9 @@ export default function LiveMonitor() {
   const [takeoverInput, setTakeoverInput] = useState('')
   const [takingOver, setTakingOver] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
-  const eventSourceRef = useRef<EventSource | null>(null)
 
   // SSE Connection
   useEffect(() => {
-    const url = `${API_URL}/live/stream?token=${auth.token}`
     // EventSource doesn't support custom headers, so we'll use fetch-based SSE
     let aborted = false
 

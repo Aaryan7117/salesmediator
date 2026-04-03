@@ -44,19 +44,6 @@ export default function Dashboard() {
     }
   }
 
-  const getStateBadgeClass = (state: string) => {
-    switch(state) {
-      case 'Decision-Ready': return 'badge-intent badge-decision-ready'
-      case 'Comparing': return 'badge-intent badge-comparing'
-      default: return 'badge-intent badge-exploring'
-    }
-  }
-
-  const getGaugeColor = (score: number) => {
-    if (score >= 76) return 'var(--accent-green)'
-    if (score >= 41) return 'var(--accent-yellow)'
-    return 'var(--accent-blue)'
-  }
 
   return (
     <div>

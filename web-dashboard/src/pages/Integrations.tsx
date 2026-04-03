@@ -9,8 +9,7 @@ export default function Integrations() {
     webhook_url: '',
   })
   const [saved, setSaved] = useState(false)
-  const [loading, setLoading] = useState(true)
-
+  
   useEffect(() => { fetchIntegrations() }, [])
 
   const fetchIntegrations = async () => {
@@ -27,7 +26,6 @@ export default function Integrations() {
         })
       }
     } catch (err) { console.error(err) }
-    finally { setLoading(false) }
   }
 
   const handleSave = async () => {
