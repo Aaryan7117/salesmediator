@@ -195,7 +195,7 @@ export default function Dashboard() {
               <div style={{ marginTop: 16, padding: 16, background: 'rgba(99,102,241,0.06)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Your embed code</div>
                 <code style={{ fontSize: 12, color: 'var(--accent-primary)', wordBreak: 'break-all' }}>
-                  {'<script src="https://cdn.salesgen.com/widget.js" data-org="' + (auth.orgSlug || 'your-slug') + '"></script>'}
+                  {'<script src="' + API_URL + '/widget/widget.js" data-org="' + (auth.orgSlug || 'your-slug') + '" data-api="' + API_URL + '"></script>'}
                 </code>
               </div>
             </div>
