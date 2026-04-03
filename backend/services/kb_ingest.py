@@ -74,10 +74,12 @@ def ingest_pdf(
     if not chunks:
         return 0
 
-    collection = chroma_client.get_or_create_collection(f"org_{org_id}")
+    collection = chroma_client.get_or_create_collection(
+        name=f"org_{org_id}",
+        embedding_function=embedding_model,
+    )
 
     ids = [f"{doc_id}_chunk_{i}" for i in range(len(chunks))]
-    embeddings = embedding_model.encode(chunks).tolist()
     metadatas = [
         {
             "filename": filename,
@@ -92,7 +94,6 @@ def ingest_pdf(
     collection.add(
         ids=ids,
         documents=chunks,
-        embeddings=embeddings,
         metadatas=metadatas,
     )
 
@@ -131,10 +132,12 @@ def ingest_csv(
     # Make each Q&A row its own distinct chunk for precise semantic search
     chunks = rows_text
 
-    collection = chroma_client.get_or_create_collection(f"org_{org_id}")
+    collection = chroma_client.get_or_create_collection(
+        name=f"org_{org_id}",
+        embedding_function=embedding_model,
+    )
 
     ids = [f"{doc_id}_chunk_{i}" for i in range(len(chunks))]
-    embeddings = embedding_model.encode(chunks).tolist()
     metadatas = [
         {
             "filename": filename,
@@ -149,7 +152,6 @@ def ingest_csv(
     collection.add(
         ids=ids,
         documents=chunks,
-        embeddings=embeddings,
         metadatas=metadatas,
     )
 

@@ -22,7 +22,10 @@ def query_kb(
     or None if no match passes the threshold.
     """
     collection_name = f"org_{org_id}"
-    collection = chroma_client.get_or_create_collection(collection_name)
+    collection = chroma_client.get_or_create_collection(
+        name=collection_name,
+        embedding_function=embedding_model,
+    )
 
     doc_count = collection.count()
     logger.info(f"KB search: collection='{collection_name}' docs={doc_count} query='{message[:50]}'")
@@ -32,9 +35,8 @@ def query_kb(
         logger.warning(f"KB collection '{collection_name}' is EMPTY — no documents uploaded for this org.")
         return None
 
-    query_embedding = embedding_model.encode(message).tolist()
     results = collection.query(
-        query_embeddings=[query_embedding],
+        query_texts=[message],
         n_results=1,
         include=["documents", "metadatas", "distances"],
     )

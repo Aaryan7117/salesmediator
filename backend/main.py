@@ -29,10 +29,10 @@ except ImportError:
     CHROMADB_AVAILABLE = False
 
 try:
-    from sentence_transformers import SentenceTransformer
-    SENTENCE_TRANSFORMERS_AVAILABLE = True
+    from chromadb.utils import embedding_functions
+    EMBEDDINGS_AVAILABLE = True
 except ImportError:
-    SENTENCE_TRANSFORMERS_AVAILABLE = False
+    EMBEDDINGS_AVAILABLE = False
 
 
 @asynccontextmanager
@@ -54,14 +54,13 @@ async def lifespan(app: FastAPI):
             "Install with: pip install chromadb"
         )
 
-    if SENTENCE_TRANSFORMERS_AVAILABLE:
-        app.state.embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-        logger.info("Embedding model loaded (all-MiniLM-L6-v2)")
+    if EMBEDDINGS_AVAILABLE:
+        app.state.embedding_model = embedding_functions.DefaultEmbeddingFunction()
+        logger.info("Embedding model loaded (Chroma ONNX Default)")
     else:
         app.state.embedding_model = None
         logger.warning(
-            "sentence-transformers not installed — KB ingestion and chat will not work. "
-            "Install with: pip install sentence-transformers"
+            "Embedding functions not available — KB ingestion and chat will not work."
         )
 
     yield
