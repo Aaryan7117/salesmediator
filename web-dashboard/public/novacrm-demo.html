@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NovaCRM — Modern Sales Platform</title>
+  <meta name="description" content="NovaCRM helps teams close deals faster with AI-powered pipeline management.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #6366f1; --primary-dark: #4f46e5; --bg: #0f0f1a;
+      --surface: #1a1a2e; --surface-2: #242442; --text: #f1f5f9;
+      --text-dim: #94a3b8; --border: rgba(255,255,255,0.08);
+      --green: #10b981; --orange: #f59e0b;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
+    a { color: var(--primary); text-decoration: none; }
+
+    /* ── Nav ── */
+    .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 16px 0; background: rgba(15,15,26,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); }
+    .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+    .nav-logo { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a { color: var(--text-dim); font-size: 14px; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta { padding: 8px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .nav-cta:hover { background: var(--primary-dark); }
+
+    /* ── Hero ── */
+    .hero { padding: 160px 24px 100px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 800px; height: 600px; background: radial-gradient(ellipse, rgba(99,102,241,0.12) 0%, transparent 70%); pointer-events: none; }
+    .hero h1 { font-size: 56px; font-weight: 800; max-width: 720px; margin: 0 auto 20px; line-height: 1.1; background: linear-gradient(180deg, #fff 0%, #94a3b8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { font-size: 18px; color: var(--text-dim); max-width: 540px; margin: 0 auto 36px; }
+    .hero-btns { display: flex; gap: 12px; justify-content: center; }
+    .btn-primary { padding: 14px 32px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(99,102,241,0.3); }
+    .btn-outline { padding: 14px 32px; background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 10px; font-size: 16px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* ── Stats ── */
+    .stats { display: flex; justify-content: center; gap: 48px; padding: 40px 24px 80px; }
+    .stat { text-align: center; }
+    .stat-num { font-size: 36px; font-weight: 800; color: var(--primary); }
+    .stat-label { font-size: 14px; color: var(--text-dim); margin-top: 4px; }
+
+    /* ── Features ── */
+    .section { padding: 80px 24px; max-width: 1200px; margin: 0 auto; }
+    .section-header { text-align: center; margin-bottom: 56px; }
+    .section-label { font-size: 13px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+    .section-title { font-size: 40px; font-weight: 800; margin-bottom: 16px; }
+    .section-subtitle { font-size: 16px; color: var(--text-dim); max-width: 520px; margin: 0 auto; }
+
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px; transition: all 0.3s; }
+    .feature-card:hover { border-color: rgba(99,102,241,0.3); transform: translateY(-4px); box-shadow: 0 8px 32px rgba(99,102,241,0.08); }
+    .feature-icon { width: 48px; height: 48px; border-radius: 12px; background: rgba(99,102,241,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; }
+    .feature-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .feature-desc { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+
+    /* ── Pricing ── */
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 960px; margin: 0 auto; }
+    .price-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px; display: flex; flex-direction: column; }
+    .price-card.popular { border-color: var(--primary); position: relative; }
+    .price-card.popular::before { content: 'POPULAR'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; font-size: 11px; font-weight: 700; padding: 4px 16px; border-radius: 20px; letter-spacing: 1px; }
+    .price-name { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .price-amount { font-size: 40px; font-weight: 800; margin-bottom: 4px; }
+    .price-amount span { font-size: 16px; font-weight: 400; color: var(--text-dim); }
+    .price-desc { font-size: 14px; color: var(--text-dim); margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+    .price-features { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; flex: 1; }
+    .price-features li { font-size: 14px; color: var(--text-dim); display: flex; gap: 8px; align-items: center; }
+    .price-features li::before { content: '✓'; color: var(--green); font-weight: 700; }
+
+    /* ── Testimonials ── */
+    .testimonials { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .testimonial { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; }
+    .testimonial-text { font-size: 15px; color: var(--text-dim); line-height: 1.7; margin-bottom: 20px; font-style: italic; }
+    .testimonial-author { display: flex; gap: 12px; align-items: center; }
+    .testimonial-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+    .testimonial-name { font-size: 14px; font-weight: 600; }
+    .testimonial-role { font-size: 12px; color: var(--text-dim); }
+
+    /* ── CTA ── */
+    .cta-section { text-align: center; padding: 80px 24px; background: linear-gradient(180deg, transparent 0%, rgba(99,102,241,0.06) 100%); }
+    .cta-section h2 { font-size: 40px; font-weight: 800; margin-bottom: 16px; }
+    .cta-section p { font-size: 16px; color: var(--text-dim); margin-bottom: 32px; }
+
+    /* ── Footer ── */
+    .footer { padding: 48px 24px; border-top: 1px solid var(--border); max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .footer-text { color: var(--text-dim); font-size: 13px; }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 32px; }
+      .features-grid, .pricing-grid, .testimonials { grid-template-columns: 1fr; }
+      .stats { flex-direction: column; gap: 24px; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">NovaCRM</div>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#testimonials">Customers</a></li>
+      </ul>
+      <button class="nav-cta">Start Free Trial</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>Close Deals Faster with AI-Powered Sales</h1>
+    <p>NovaCRM combines pipeline management, lead scoring, and AI insights to help modern sales teams hit quota every quarter.</p>
+    <div class="hero-btns">
+      <button class="btn-primary">Get Started Free</button>
+      <button class="btn-outline">Watch Demo →</button>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="stat-num">2,400+</div><div class="stat-label">Companies</div></div>
+    <div class="stat"><div class="stat-num">$1.2B</div><div class="stat-label">Pipeline Managed</div></div>
+    <div class="stat"><div class="stat-num">34%</div><div class="stat-label">Faster Close Rate</div></div>
+    <div class="stat"><div class="stat-num">4.9★</div><div class="stat-label">G2 Rating</div></div>
+  </div>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="section-header">
+      <div class="section-label">Features</div>
+      <h2 class="section-title">Everything you need to sell better</h2>
+      <p class="section-subtitle">From pipeline management to AI forecasting, NovaCRM has your sales team covered.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon">📊</div><h3 class="feature-title">Smart Pipeline</h3><p class="feature-desc">Visualize and manage your deals with AI-powered stage recommendations and health scores.</p></div>
+      <div class="feature-card"><div class="feature-icon">🧠</div><h3 class="feature-title">AI Lead Scoring</h3><p class="feature-desc">Automatically score and prioritize leads based on engagement signals, content consumption, and fit.</p></div>
+      <div class="feature-card"><div class="feature-icon">📧</div><h3 class="feature-title">Email Sequences</h3><p class="feature-desc">Create personalized multi-step email campaigns that adapt based on prospect engagement.</p></div>
+      <div class="feature-card"><div class="feature-icon">📈</div><h3 class="feature-title">Revenue Intelligence</h3><p class="feature-desc">Real-time dashboards showing pipeline velocity, win rates, and quota attainment by rep.</p></div>
+      <div class="feature-card"><div class="feature-icon">🔗</div><h3 class="feature-title">Integrations</h3><p class="feature-desc">Connect with Slack, HubSpot, Salesforce, Zapier, and 200+ other tools out of the box.</p></div>
+      <div class="feature-card"><div class="feature-icon">🔒</div><h3 class="feature-title">Enterprise Security</h3><p class="feature-desc">SOC2, GDPR, and CCPA compliant with role-based access, SSO, and audit logs.</p></div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section" id="pricing">
+    <div class="section-header">
+      <div class="section-label">Pricing</div>
+      <h2 class="section-title">Plans that scale with you</h2>
+      <p class="section-subtitle">Start free, upgrade when you're ready. No hidden fees.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-name">Starter</div>
+        <div class="price-amount">$0<span>/mo</span></div>
+        <p class="price-desc">For individuals and small teams getting started.</p>
+        <ul class="price-features">
+          <li>Up to 500 contacts</li><li>Basic pipeline</li><li>Email integration</li><li>Community support</li>
+        </ul>
+        <button class="btn-outline" style="width:100%">Start Free</button>
+      </div>
+      <div class="price-card popular">
+        <div class="price-name">Growth</div>
+        <div class="price-amount">$49<span>/user/mo</span></div>
+        <p class="price-desc">For growing teams that need AI and automation.</p>
+        <ul class="price-features">
+          <li>Unlimited contacts</li><li>AI lead scoring</li><li>Email sequences</li><li>Revenue dashboards</li><li>Priority support</li>
+        </ul>
+        <button class="btn-primary" style="width:100%">Start Free Trial</button>
+      </div>
+      <div class="price-card">
+        <div class="price-name">Enterprise</div>
+        <div class="price-amount">Custom</div>
+        <p class="price-desc">For large teams with advanced needs.</p>
+        <ul class="price-features">
+          <li>Everything in Growth</li><li>SSO & SAML</li><li>Custom integrations</li><li>Dedicated CSM</li><li>SLA guarantee</li>
+        </ul>
+        <button class="btn-outline" style="width:100%">Contact Sales</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" id="testimonials">
+    <div class="section-header">
+      <div class="section-label">Customers</div>
+      <h2 class="section-title">Loved by sales teams everywhere</h2>
+    </div>
+    <div class="testimonials">
+      <div class="testimonial">
+        <p class="testimonial-text">"NovaCRM's AI scoring saved us 20 hours a week on lead qualification. Our pipeline accuracy jumped 40%."</p>
+        <div class="testimonial-author"><div class="testimonial-avatar">SK</div><div><div class="testimonial-name">Sarah Kim</div><div class="testimonial-role">VP Sales, TechFlow Inc</div></div></div>
+      </div>
+      <div class="testimonial">
+        <p class="testimonial-text">"We switched from Salesforce and haven't looked back. The interface is gorgeous and the AI features are ahead of anything else."</p>
+        <div class="testimonial-author"><div class="testimonial-avatar">MR</div><div><div class="testimonial-name">Marcus Rodriguez</div><div class="testimonial-role">Head of Revenue, ScaleUp</div></div></div>
+      </div>
+      <div class="testimonial">
+        <p class="testimonial-text">"The email sequences alone paid for the product. We're booking 3x more demos with half the manual effort."</p>
+        <div class="testimonial-author"><div class="testimonial-avatar">AP</div><div><div class="testimonial-name">Aisha Patel</div><div class="testimonial-role">SDR Manager, CloudBase</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2>Ready to transform your sales?</h2>
+    <p>Join 2,400+ companies using NovaCRM to close deals faster.</p>
+    <button class="btn-primary">Start Free Trial →</button>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-text">© 2026 NovaCRM. All rights reserved.</div>
+    <div class="footer-text">Made with ❤️ for sales teams</div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SalesGen Widget — ONE LINE of code to add AI agent -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <script src="https://salesgen-api.onrender.com/widget/widget.js"
+          data-org="novacrm-3d80d3"
+          data-api="https://salesgen-api.onrender.com"></script>
+
+</body>
+
+</html>
