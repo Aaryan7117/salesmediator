@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth } from '../App'
+import { useAuth, API_URL } from '../App'
 
 export default function WidgetCustomizer() {
   const { auth } = useAuth()
@@ -11,7 +11,7 @@ export default function WidgetCustomizer() {
   })
   const [copied, setCopied] = useState(false)
 
-  const embedCode = `<script src="https://cdn.salesgen.com/widget.js" data-org="${auth.orgSlug || 'your-slug'}"></script>`
+  const embedCode = `<script src="${API_URL}/widget/widget.js" data-org="${auth.orgSlug || 'your-slug'}" data-api="${API_URL}"></script>`
 
   const copyCode = () => {
     navigator.clipboard.writeText(embedCode)
