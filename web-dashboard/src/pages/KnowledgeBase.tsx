@@ -31,10 +31,11 @@ export default function KnowledgeBase() {
 
   const fetchDocs = async () => {
     try {
-      const res = await fetch(`${API_URL}/kb/`, {
+      const res = await fetch(`${API_URL}/kb/documents`, {
         headers: { Authorization: `Bearer ${auth.token}` },
       })
       if (res.ok) setDocs(await res.json())
+      else console.error('fetchDocs failed:', res.status, await res.text())
     } catch (err) { console.error(err) }
     finally { setLoading(false) }
   }
@@ -59,8 +60,18 @@ export default function KnowledgeBase() {
         headers: { Authorization: `Bearer ${auth.token}` },
         body: formData,
       })
-      if (res.ok) { fetchDocs() }
-    } catch (err) { console.error(err) }
+      if (res.ok) {
+        fetchDocs()
+        alert('✅ Document uploaded successfully!')
+      } else {
+        const errData = await res.text()
+        console.error('Upload failed:', res.status, errData)
+        alert(`❌ Upload failed: ${errData}`)
+      }
+    } catch (err) {
+      console.error(err)
+      alert(`❌ Upload error: ${err}`)
+    }
     finally { setUploading(false) }
   }
 
