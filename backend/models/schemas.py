@@ -237,3 +237,31 @@ class IntentHistoryItem(BaseModel):
     score_after: int
     signals: list[str] = []
     created_at: datetime | None = None
+
+
+# ---------------------------------------------------------------------------
+# Qualification Settings
+# ---------------------------------------------------------------------------
+class QualificationCondition(BaseModel):
+    """A single numeric condition, e.g. company_size >= 50."""
+    field: str = Field(..., min_length=1, max_length=50)
+    op: str = Field(..., pattern=r"^(>=|<=|>|<|==)$")
+    value: int | float
+
+
+class QualificationCriteriaResponse(BaseModel):
+    required_fields: list[str] = ["name", "company", "role", "use_case"]
+    conditions: list[QualificationCondition] = []
+    is_custom: bool = False  # True if org has configured custom criteria
+
+
+class QualificationCriteriaUpdateRequest(BaseModel):
+    required_fields: list[str] = Field(
+        ..., min_length=1, max_length=10,
+        description="List of required text fields (e.g. name, company, role, use_case)"
+    )
+    conditions: list[QualificationCondition] = Field(
+        default=[],
+        description="List of numeric conditions (e.g. company_size >= 50)"
+    )
+

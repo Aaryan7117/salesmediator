@@ -12,6 +12,7 @@ import LiveMonitor from './pages/LiveMonitor'
 import KnowledgeBase from './pages/KnowledgeBase'
 import WidgetCustomizer from './pages/WidgetCustomizer'
 import Integrations from './pages/Integrations'
+import QualificationSettings from './pages/QualificationSettings'
 import Team from './pages/Team'
 import Onboarding from './pages/Onboarding'
 
@@ -99,6 +100,7 @@ function App() {
             <Route path="live" element={<LiveMonitor />} />
             <Route path="knowledge-base" element={<KnowledgeBase />} />
             <Route path="widget" element={<WidgetCustomizer />} />
+            <Route path="qualification" element={<QualificationSettings />} />
             <Route path="integrations" element={<Integrations />} />
             <Route path="team" element={<Team />} />
           </Route>

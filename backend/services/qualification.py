@@ -14,11 +14,10 @@ from groq import AsyncGroq
 logger = logging.getLogger(__name__)
 
 # ── Default criteria (used when org hasn't configured custom ones) ──
+# Only text fields required by default. Numeric conditions (company_size,
+# timeline) are optional — orgs add them via the qualification_criteria table.
 DEFAULT_REQUIRED_FIELDS = ["name", "company", "role", "use_case"]
-DEFAULT_CONDITIONS = [
-    {"field": "company_size", "op": ">=", "value": 50},
-    {"field": "timeline_months", "op": "<=", "value": 3},
-]
+DEFAULT_CONDITIONS: list[dict] = []  # No numeric gates by default
 
 # ── Regex pre-extractors (fast, no LLM call needed) ──
 COMPANY_SIZE_PATTERNS = [

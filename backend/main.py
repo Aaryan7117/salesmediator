@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 from config import settings
-from routes import auth, kb, chat, session, leads, team, integrations, analytics, widget_config, live
+from routes import auth, kb, chat, session, leads, team, integrations, analytics, widget_config, live, qualification_settings
 
 logger = logging.getLogger(__name__)
 
@@ -130,6 +130,7 @@ app.include_router(integrations.router, prefix="/integrations", tags=["Integrati
 app.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
 app.include_router(widget_config.router, prefix="/widget-config", tags=["Widget Config"])
 app.include_router(live.router, prefix="/live", tags=["Live Streaming"])
+app.include_router(qualification_settings.router, prefix="/qualification-settings", tags=["Qualification Settings"])
 
 # Serve widget.js as a static file
 widget_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "widget")
