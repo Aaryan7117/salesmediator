@@ -219,11 +219,24 @@
       }
       .sg-input:focus { border-color: ${config.brand_color}; }
       .sg-input::placeholder { color: #94a3b8; }
+      .sg-mic {
+        width: 40px; height: 40px; border-radius: 10px;
+        background: transparent; border: 1px solid #e2e8f0; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s; color: #94a3b8; flex-shrink: 0;
+      }
+      .sg-mic:hover { color: ${config.brand_color}; border-color: ${config.brand_color}; }
+      .sg-mic.sg-mic-active { color: #ef4444; border-color: #ef4444; background: #fef2f2; animation: sg-pulse 1.5s ease-in-out infinite; }
+      @keyframes sg-pulse {
+        0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); }
+        50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+      }
+
       .sg-send {
         width: 40px; height: 40px; border-radius: 10px;
         background: ${config.brand_color}; border: none; cursor: pointer;
         display: flex; align-items: center; justify-content: center;
-        transition: all 0.2s; color: white;
+        transition: all 0.2s; color: white; flex-shrink: 0;
       }
       .sg-send:hover { opacity: 0.9; transform: scale(1.05); }
       .sg-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
@@ -235,7 +248,13 @@
       .sg-powered a { color: #6366f1; text-decoration: none; font-weight: 600; }
 
       @media (max-width: 480px) {
-        #sg-widget-panel { width: calc(100vw - 24px); bottom: 80px; border-radius: 12px; }
+        #sg-widget-panel {
+          position: fixed !important; top: 0 !important; left: 0 !important;
+          right: 0 !important; bottom: 0 !important;
+          width: 100% !important; max-height: 100% !important;
+          border-radius: 0 !important;
+        }
+        #sg-widget-panel .sg-messages { max-height: none; }
       }
     `;
     document.head.appendChild(style);
@@ -267,6 +286,14 @@
       <div class="sg-messages" id="sg-messages"></div>
       <div class="sg-input-area">
         <input class="sg-input" id="sg-input" placeholder="Type your message..." autocomplete="off" />
+        <button class="sg-mic" id="sg-mic" title="Voice input">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </button>
         <button class="sg-send" id="sg-send">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
@@ -294,6 +321,7 @@
     fab.addEventListener("click", toggleWidget);
     document.getElementById("sg-close").addEventListener("click", toggleWidget);
     document.getElementById("sg-send").addEventListener("click", sendMessage);
+    document.getElementById("sg-mic").addEventListener("click", startVoiceInput);
     document.getElementById("sg-input").addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -329,6 +357,45 @@
     }
   }
 
+  // ── Voice Input (Web Speech API) ──
+  function startVoiceInput() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice input is supported in Chrome and Edge browsers.");
+      return;
+    }
+
+    const mic = document.getElementById("sg-mic");
+    const input = document.getElementById("sg-input");
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    // Visual feedback — mic turns red while listening
+    mic.classList.add("sg-mic-active");
+    input.placeholder = "🎤 Listening...";
+
+    recognition.onresult = function (event) {
+      const transcript = event.results[0][0].transcript;
+      input.value = transcript;
+      mic.classList.remove("sg-mic-active");
+      input.placeholder = "Type your message...";
+      input.focus();
+    };
+
+    recognition.onerror = function () {
+      mic.classList.remove("sg-mic-active");
+      input.placeholder = "Type your message...";
+    };
+
+    recognition.onend = function () {
+      mic.classList.remove("sg-mic-active");
+      input.placeholder = "Type your message...";
+    };
+
+    recognition.start();
+  }
   // ── Send Message ──
   async function sendMessage() {
     const input = document.getElementById("sg-input");
