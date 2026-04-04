@@ -251,8 +251,12 @@ async def chat_with_org(org_slug: str, body: ChatMessageRequest, request: Reques
 
     elif qual_status == "unqualified":
         # Unqualified — serve structured KB resources
-        kb_resources_list = query_kb_resources(org_id, sb, limit=5)
-        logger.info(f"🔴 Lead UNQUALIFIED: serving {len(kb_resources_list)} KB resources")
+        logger.info(f"🔴 Lead UNQUALIFIED: {session_id[:12]}...")
+
+    # Always fetch video/resource links so the widget can embed them
+    # (videos should be available regardless of qualification status)
+    kb_resources_list = query_kb_resources(org_id, sb, limit=5)
+    logger.info(f"📎 KB resources available: {len(kb_resources_list)} for org {org_id}")
 
     # 9. Generate AI reply with qualification-aware guidance
     try:

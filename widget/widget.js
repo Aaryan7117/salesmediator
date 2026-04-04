@@ -68,7 +68,7 @@
 
       #sg-widget-panel {
         position: fixed; bottom: 88px; z-index: 999998;
-        width: 380px; max-height: 560px; border-radius: 16px;
+        width: 420px; max-height: 650px; border-radius: 16px;
         background: #ffffff; overflow: hidden;
         box-shadow: 0 12px 48px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
         display: flex; flex-direction: column;
@@ -103,7 +103,7 @@
 
       .sg-messages {
         flex: 1; overflow-y: auto; padding: 16px; display: flex;
-        flex-direction: column; gap: 12px; min-height: 300px; max-height: 400px;
+        flex-direction: column; gap: 12px; min-height: 360px; max-height: 480px;
         background: #f8fafc;
       }
       .sg-msg { max-width: 80%; display: flex; gap: 8px; }
@@ -170,7 +170,7 @@
       }
       .sg-video-card:hover { transform: scale(1.01); }
       .sg-video-card iframe, .sg-video-card video {
-        width: 100%; height: 180px; border: none; display: block;
+        width: 100%; height: 200px; border: none; display: block;
       }
       .sg-video-card video { background: #000; object-fit: cover; }
       .sg-video-meta {
