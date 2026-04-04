@@ -15,11 +15,11 @@ def query_kb(
     embedding_model,
     chroma_client,
     similarity_threshold: float = 1.5,
-) -> dict | None:
+    n_results: int = 1,
+) -> list[dict]:
     """
-    Search the org's ChromaDB collection for the most relevant chunk.
-    Returns a dict with title, source_file, chunk_id, relevance_score, excerpt
-    or None if no match passes the threshold.
+    Search the org's ChromaDB collection for the most relevant chunks.
+    Returns a list of dicts with title, source_file, chunk_id, relevance_score, excerpt.
     """
     collection_name = f"org_{org_id}"
     collection = chroma_client.get_or_create_collection(
@@ -30,39 +30,40 @@ def query_kb(
     doc_count = collection.count()
     logger.info(f"KB search: collection='{collection_name}' docs={doc_count} query='{message[:50]}'")
 
-    # Check if collection has any documents
     if doc_count == 0:
         logger.warning(f"KB collection '{collection_name}' is EMPTY — no documents uploaded for this org.")
-        return None
+        return []
 
     results = collection.query(
         query_texts=[message],
-        n_results=1,
+        n_results=n_results,
         include=["documents", "metadatas", "distances"],
     )
 
-    if not results["ids"][0]:
+    if not results["ids"] or not results["ids"][0]:
         logger.warning("KB query returned no results.")
-        return None
+        return []
 
-    distance = results["distances"][0][0]
-    # Convert L2 distance (0.0=perfect to ~1.5=weak) to a UI-friendly 70-99% score
-    relevance = max(70, min(99, int(99 - (distance / 1.5) * 29)))
-    logger.info(f"KB best match: distance={distance:.4f} relevance={relevance}% threshold={similarity_threshold}")
+    matched_resources = []
+    for i in range(len(results["ids"][0])):
+        distance = results["distances"][0][i]
+        relevance = max(70, min(99, int(99 - (distance / 1.5) * 29)))
+        
+        if distance > similarity_threshold:
+            logger.info(f"KB match rejected: distance {distance:.4f} > threshold {similarity_threshold}")
+            continue
 
-    if distance > similarity_threshold:
-        logger.info(f"KB match rejected: distance {distance:.4f} > threshold {similarity_threshold}")
-        return None  # No match good enough — return nothing, never guess
+        title = results["metadatas"][0][i].get("title", "Document")
+        logger.info(f"KB match accepted: '{title}' at {relevance}% relevance")
 
-    title = results["metadatas"][0][0].get("title", "Document")
-    logger.info(f"KB match accepted: '{title}' at {relevance}% relevance")
+        matched_resources.append({
+            "title": title,
+            "source_file": results["metadatas"][0][i].get("filename", ""),
+            "chunk_id": results["ids"][0][i],
+            "relevance_score": relevance,
+            "content": results["documents"][0][i],
+            "excerpt": results["documents"][0][i][:200],
+        })
 
-    return {
-        "title": title,
-        "source_file": results["metadatas"][0][0].get("filename", ""),
-        "chunk_id": results["ids"][0][0],
-        "relevance_score": relevance,
-        "content": results["documents"][0][0],
-        "excerpt": results["documents"][0][0][:200],
-    }
+    return matched_resources
 

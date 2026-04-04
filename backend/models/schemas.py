@@ -13,6 +13,18 @@ from pydantic import BaseModel, Field, field_validator
 
 
 # ---------------------------------------------------------------------------
+# Qualification Data
+# ---------------------------------------------------------------------------
+class QualificationData(BaseModel):
+    name: str | None = None
+    company: str | None = None
+    role: str | None = None
+    use_case: str | None = None
+    company_size: int | None = None
+    timeline_months: int | None = None
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 def strip_html(value: str) -> str:
@@ -120,6 +132,8 @@ class ChatMessageResponse(BaseModel):
     resource: ResourceServed | None = None
     show_calendly: bool = False
     calendly_link: str | None = None
+    qualification_data: QualificationData | None = None
+    is_qualified: bool | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -146,6 +160,8 @@ class LeadResponse(BaseModel):
     calendly_shown: bool = False
     created_at: datetime | None = None
     updated_at: datetime | None = None
+    qualification_data: QualificationData | None = None
+    is_qualified: bool | None = None
 
 
 class LeadListItem(BaseModel):
@@ -156,6 +172,8 @@ class LeadListItem(BaseModel):
     intent_state: str = "Exploring"
     signals: list[str] = []
     updated_at: datetime | None = None
+    qualification_data: QualificationData | None = None
+    is_qualified: bool | None = None
 
 
 # ---------------------------------------------------------------------------

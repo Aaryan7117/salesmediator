@@ -1,7 +1,6 @@
 """
 LLM response generation — Groq Cloud with full conversation context.
-V2: Now uses pacing-aware instructions, conversation summaries,
-and disambiguation notes for contradiction handling.
+V3: Explicit Criteria Verification.
 """
 
 import logging
@@ -10,55 +9,58 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
-STATE_INSTRUCTIONS = {
-    "Exploring": (
-        "The buyer is in early exploration. Answer their questions directly using the knowledge base. "
-        "End with one gentle clarifying question to learn about their goals or team size."
-    ),
-    "Comparing": (
-        "The buyer is comparing options. Highlight differentiation based on the KB. "
-        "Share relevant specs, pricing, or case studies directly."
-    ),
-    "Decision-Ready": (
-        "The buyer is ready. Be warm and direct. A scheduling option will be "
-        "shown to them separately — do not force it, just be ready to answer final questions."
-    ),
-}
-
 
 async def generate_reply(
     message: str,
     conversation_history: list[dict],
-    intent_state: str,
+    is_qualified: bool | None,
+    qualification_data: dict,
     persona: str | None,
-    kb_resource: dict | None,
+    kb_resources: list[dict] | None,
     org_name: str,
     groq_api_key: str,
-    pacing_instruction: str | None = None,
     conversation_summary: str | None = None,
     disambiguation_note: str | None = None,
 ) -> str:
     """
-    Generate an AI reply using Groq with:
-    - Pacing-aware instructions (multi-threshold)
-    - Conversation summary (long conversations)
-    - Disambiguation notes (contradiction handling)
-    - KB resource context with citations
+    Generate an AI reply using Groq based on explicit qualification state.
     """
     resource_context = ""
-    if kb_resource:
-        resource_context = (
-            f"\nRelevant information from our knowledge base:\n"
-            f"{kb_resource.get('content', kb_resource.get('excerpt', ''))}\n"
-            f"Source: {kb_resource['source_file']}\n"
-            f"IMPORTANT: When using this information, cite the source naturally, "
-            f"e.g. 'According to our documentation...'"
-        )
+    if kb_resources:
+        resource_context = "\nRelevant information from our knowledge base:\n"
+        for resource in kb_resources:
+            resource_context += (
+                f"- {resource.get('title', 'Document')} (Source: {resource.get('source_file')}):\n"
+                f"  {resource.get('content', resource.get('excerpt', ''))}\n"
+            )
+        resource_context += "\nIMPORTANT: When using this information, restrict your recommendations or answers STRICTLY to the provided knowledge base above. Cite sources naturally."
 
     persona_context = f"\nBuyer persona detected: {persona}" if persona else ""
 
-    # Use pacing instruction if available, otherwise fall back to state instructions
-    guidance = pacing_instruction or f"Stage guidance: {STATE_INSTRUCTIONS[intent_state]}"
+    # Build criteria guidance based on is_qualified State
+    if is_qualified is None:
+        missing_fields = [k for k, v in qualification_data.items() if v is None]
+        guidance = (
+            f"The buyer's qualification is incomplete. We are missing info for: {missing_fields}. "
+            "Be helpful and answer their questions using the knowledge base. "
+            "IMPORTANT: End with naturally asking ONE clarifying question to gather some of the missing information. "
+            "Do NOT offer a demo, meeting, or email confirmation yet."
+        )
+    elif is_qualified is True:
+        guidance = (
+            "The buyer is QUALIFIED. Be warm and direct. "
+            "Acknowledge that they are a great fit. Naturally draft a short confirmation email for them "
+            "and let them know you are providing a meeting scheduling option to their email."
+            "Do NOT ask any more qualifying questions."
+        )
+    else:
+        guidance = (
+            "The buyer is UNQUALIFIED (e.g., they are too small or timeline is too long). "
+            "Explain nicely that your primary managed offering might not be the best fit right now, "
+            "but you wanted to provide them with some helpful educational resources. "
+            "Recommend the specific knowledge base resources, platform videos, or spec links provided below. "
+            "Do NOT offer a meeting scheduling link."
+        )
 
     # Build disambiguation instruction
     disambiguation_context = ""
@@ -75,21 +77,19 @@ async def generate_reply(
         summary_context = f"\nConversation context so far: {conversation_summary}"
 
     system_prompt = (
-        f"You are the AI sales assistant for {org_name}. \n"
-        f"You are helpful, warm, and never pushy. You only answer questions "
-        f"using the provided knowledge base information.\n"
-        f"If you don't have information about something, say so honestly — "
-        f"never make up facts.\n"
-        f"Keep responses concise (2-4 sentences max). No bullet points unless listing features."
+        f"You are the AI sales orchestrator for {org_name}. \n"
+        f"You are helpful, warm, and never pushy. You respond precisely based on the stage criteria.\n"
+        f"If you don't have information about something, say so honestly — never make up facts.\n"
+        f"Keep responses concise (2-4 sentences max). No bullet points unless listing features or KB resources.\n"
         f"{persona_context}\n"
-        f"{guidance}"
-        f"{summary_context}"
+        f"STRATEGY INSTRUCTION: {guidance}\n"
+        f"{summary_context}\n"
         f"{disambiguation_context}"
     )
 
     messages = [{"role": "system", "content": system_prompt}]
 
-    # Build context: summary + recent turns (if summary exists), or last 6 turns
+    # Build context: summary + recent turns
     if conversation_summary and len(conversation_history) > 4:
         for turn in conversation_history[-4:]:
             role = turn["role"]
@@ -103,16 +103,16 @@ async def generate_reply(
                 role = "user"
             messages.append({"role": role, "content": turn["content"]})
 
-    messages.append({"role": "user", "content": message + resource_context})
+    messages.append({"role": "user", "content": message + "\n" + resource_context})
 
-    logger.info(f"Calling Groq model={settings.groq_model} with {len(messages)} messages")
+    logger.info(f"Calling Groq model={settings.groq_model} with explicit criteria verification")
 
     client = AsyncGroq(api_key=groq_api_key)
     try:
         response = await client.chat.completions.create(
             model=settings.groq_model,
             messages=messages,
-            max_tokens=250,
+            max_tokens=300,
             temperature=0.4,
         )
         reply = response.choices[0].message.content.strip()
