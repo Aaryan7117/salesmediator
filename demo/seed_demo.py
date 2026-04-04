@@ -31,13 +31,44 @@ def seed():
     sb = get_supabase()
     print("🌱 Seeding SalesGen demo data...")
 
-    # ── 1. Create demo org ──
-    org_id = str(uuid.uuid4())
-    sb.table("orgs").upsert({
-        "id": org_id,
-        "name": "NovaCRM",
-        "slug": "novacrm",
-    }).execute()
+    # ── 1. Create or reuse demo org ──
+    # Check if "novacrm" already exists
+    existing = sb.table("orgs").select("id").eq("slug", "novacrm").execute()
+    if existing.data:
+        org_id = existing.data[0]["id"]
+        print(f"  ✓ Org: NovaCRM already exists (id: {org_id[:8]}...), cleaning old data...")
+        # Clean up old leads, history, criteria, kb_resources for this org
+        try:
+            old_leads = sb.table("leads").select("id").eq("org_id", org_id).execute()
+            for lead in (old_leads.data or []):
+                sb.table("intent_history").delete().eq("lead_id", lead["id"]).execute()
+            sb.table("leads").delete().eq("org_id", org_id).execute()
+        except Exception:
+            pass
+        try:
+            sb.table("qualification_criteria").delete().eq("org_id", org_id).execute()
+        except Exception:
+            pass
+        try:
+            sb.table("kb_resources").delete().eq("org_id", org_id).execute()
+        except Exception:
+            pass
+        try:
+            sb.table("widget_config").delete().eq("org_id", org_id).execute()
+        except Exception:
+            pass
+        try:
+            sb.table("integrations").delete().eq("org_id", org_id).execute()
+        except Exception:
+            pass
+        print("  ✓ Old data cleaned")
+    else:
+        org_id = str(uuid.uuid4())
+        sb.table("orgs").insert({
+            "id": org_id,
+            "name": "NovaCRM",
+            "slug": "novacrm",
+        }).execute()
     print(f"  ✓ Org: NovaCRM (slug: novacrm)")
 
     # ── 2. Widget config ──

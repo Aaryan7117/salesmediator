@@ -64,7 +64,7 @@ async def live_stream(request: Request):
                 # Fetch most recently active leads
                 result = (
                     sb.table("leads")
-                    .select("id, session_id, persona, intent_score, intent_state, signals, calendly_shown, updated_at")
+                    .select("id, session_id, persona, intent_score, intent_state, signals, calendly_shown, updated_at, qualification_status, qualification_checklist, conversation")
                     .eq("org_id", org_id)
                     .order("updated_at", desc=True)
                     .limit(15)
