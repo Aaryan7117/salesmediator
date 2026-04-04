@@ -115,7 +115,7 @@ def seed():
             {
                 "org_id": org_id,
                 "title": "Platform Demo Video",
-                "url": "https://youtube.com/watch?v=novacrm-demo",
+                "url": "https://www.youtube.com/watch?v=Rx8Agl3VjnU",
                 "type": "video",
                 "description": "Full walkthrough of NovaCRM dashboard, deal tracking, and AI-powered insights.",
             },
@@ -129,7 +129,7 @@ def seed():
             {
                 "org_id": org_id,
                 "title": "Quick Start Tutorial",
-                "url": "https://youtube.com/watch?v=novacrm-quickstart",
+                "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                 "type": "video",
                 "description": "5-minute setup guide: import contacts, configure pipeline stages, go live.",
             },

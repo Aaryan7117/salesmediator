@@ -467,11 +467,25 @@
         embedHtml = `<iframe src="https://www.loom.com/embed/${loomId[1]}" allowfullscreen loading="lazy"></iframe>`;
       }
     }
-    // Direct video URL
-    else if (url.match(/\.(mp4|webm|ogg)$/i)) {
+    // Google Drive embed — converts share link to preview iframe
+    else if (url.includes('drive.google.com')) {
+      const driveMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (driveMatch) {
+        embedHtml = `<iframe src="https://drive.google.com/file/d/${driveMatch[1]}/preview" allowfullscreen loading="lazy"></iframe>`;
+      } else {
+        embedHtml = `<iframe src="${escapeHtml(url.replace('/view', '/preview'))}" allowfullscreen loading="lazy"></iframe>`;
+      }
+    }
+    // Dropbox — convert share link to raw playable URL
+    else if (url.includes('dropbox.com')) {
+      const rawUrl = url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '').replace('?dl=1', '');
+      embedHtml = `<video controls preload="metadata"><source src="${escapeHtml(rawUrl)}"></video>`;
+    }
+    // Direct video URL (.mp4, .webm, .ogg or Supabase storage URLs)
+    else if (url.match(/\.(mp4|webm|ogg)($|\?)/i) || url.includes('supabase.co/storage')) {
       embedHtml = `<video controls preload="metadata"><source src="${escapeHtml(url)}"></video>`;
     }
-    // Fallback: just a link
+    // Fallback: clickable link to watch externally
     else {
       embedHtml = `<div style="padding:30px;text-align:center;">
         <a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="color:#6366f1;font-size:14px;font-weight:600;text-decoration:none;">▶ Watch Video</a>
