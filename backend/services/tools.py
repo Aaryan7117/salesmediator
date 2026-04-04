@@ -80,6 +80,50 @@ async def draft_confirmation_email(
         )
 
 
+async def send_email_via_emailjs(
+    checklist: dict,
+    email_body: str,
+    org_name: str,
+    admin_email: str | None = None,
+) -> bool:
+    """
+    Send the drafted confirmation email via EmailJS REST API.
+    Sends to the org admin email as a notification of qualified lead.
+    Returns True if sent successfully.
+    """
+    EMAILJS_SERVICE_ID = "service_8amqupr"
+    EMAILJS_TEMPLATE_ID = "template_ibfb8l9"
+    EMAILJS_PUBLIC_KEY = "VEcCEOkf_84PhAjkD"
+
+    try:
+        payload = {
+            "service_id": EMAILJS_SERVICE_ID,
+            "template_id": EMAILJS_TEMPLATE_ID,
+            "user_id": EMAILJS_PUBLIC_KEY,
+            "template_params": {
+                "to_name": checklist.get("name", "Valued Lead"),
+                "company": checklist.get("company", ""),
+                "message": email_body,
+                "email": admin_email or "hw71111111@gmail.com",
+            },
+        }
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.post(
+                "https://api.emailjs.com/api/v1.6/email/send",
+                json=payload,
+                headers={"Content-Type": "application/json"},
+            )
+            if resp.status_code == 200:
+                logger.info(f"📧 EmailJS sent successfully for {checklist.get('name', 'lead')}")
+                return True
+            else:
+                logger.warning(f"EmailJS returned {resp.status_code}: {resp.text}")
+                return False
+    except Exception as exc:
+        logger.warning(f"EmailJS send failed (non-fatal): {exc}")
+        return False
+
+
 def generate_meeting_proposal(
     checklist: dict,
     calendly_link: str | None,

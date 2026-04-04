@@ -44,6 +44,7 @@ from services.kb_retrieval import query_kb, query_kb_resources, get_org_qualific
 from services.llm import generate_reply
 from services.tools import (
     draft_confirmation_email,
+    send_email_via_emailjs,
     generate_meeting_proposal,
     fire_qualified_lead_notifications,
 )
@@ -220,6 +221,17 @@ async def chat_with_org(org_slug: str, body: ChatMessageRequest, request: Reques
             )
         except Exception as exc:
             logger.warning(f"Email drafting failed (non-fatal): {exc}")
+
+        # Actually send the email via EmailJS
+        if drafted_email:
+            try:
+                await send_email_via_emailjs(
+                    checklist=updated_checklist,
+                    email_body=drafted_email,
+                    org_name=org_name,
+                )
+            except Exception as exc:
+                logger.warning(f"EmailJS send failed (non-fatal): {exc}")
 
         # Generate meeting proposal
         meeting_proposal = generate_meeting_proposal(
