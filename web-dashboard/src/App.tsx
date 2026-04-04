@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useState, createContext, useContext } from 'react'
 import ParticleBackground from './components/ParticleBackground'
+import LandingPage from './pages/LandingPage'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import DashboardLayout from './components/DashboardLayout'
@@ -75,6 +76,11 @@ function App() {
       <ParticleBackground />
       <BrowserRouter>
         <Routes>
+          {/* Landing page at root */}
+          <Route path="/" element={
+            isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />
+          } />
+
           {/* Public routes */}
           <Route path="/login" element={
             isAuthenticated ? <Navigate to="/dashboard" /> : <Login />
@@ -84,10 +90,9 @@ function App() {
           } />
 
           {/* Protected routes */}
-          <Route path="/" element={
+          <Route element={
             isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" />
           }>
-            <Route index element={<Navigate to="/dashboard" />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="leads" element={<Leads />} />
             <Route path="leads/:id" element={<LeadDetail />} />
