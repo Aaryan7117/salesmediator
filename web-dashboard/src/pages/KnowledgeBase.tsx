@@ -83,13 +83,21 @@ export default function KnowledgeBase() {
   }
 
   const handleDelete = async (docId: string) => {
+    if (!confirm('Are you sure you want to delete this document?')) return
     try {
-      await fetch(`${API_URL}/kb/${docId}`, {
+      const res = await fetch(`${API_URL}/kb/documents/${docId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${auth.token}` },
       })
-      fetchDocs()
-    } catch (err) { console.error(err) }
+      if (res.ok || res.status === 204) {
+        fetchDocs()
+      } else {
+        alert(`❌ Delete failed: ${await res.text()}`)
+      }
+    } catch (err) {
+      console.error(err)
+      alert(`❌ Delete error: ${err}`)
+    }
   }
 
   const handleAddResource = async () => {
