@@ -149,6 +149,53 @@
       .sg-resource-title { font-size: 13px; font-weight: 600; color: ${config.brand_color}; }
       .sg-resource-meta { font-size: 11px; color: #64748b; margin-top: 2px; }
 
+      /* Citation badge inline in bot message */
+      .sg-citation {
+        display: inline-flex; align-items: center; gap: 4px;
+        background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 6px;
+        padding: 2px 8px; margin: 4px 2px; font-size: 11px; color: #4338ca;
+        font-weight: 600; cursor: default; vertical-align: middle;
+        transition: background 0.2s;
+      }
+      .sg-citation:hover { background: #e0e7ff; }
+      .sg-citation-icon { font-size: 10px; }
+      .sg-citation-source { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .sg-citation-score { font-size: 10px; color: #6366f1; font-weight: 500; }
+
+      /* Video embed card */
+      .sg-video-card {
+        margin-top: 8px; border-radius: 10px; overflow: hidden;
+        border: 1px solid #e2e8f0; background: #0f172a;
+        transition: transform 0.2s;
+      }
+      .sg-video-card:hover { transform: scale(1.01); }
+      .sg-video-card iframe, .sg-video-card video {
+        width: 100%; height: 180px; border: none; display: block;
+      }
+      .sg-video-card video { background: #000; object-fit: cover; }
+      .sg-video-meta {
+        padding: 8px 12px; background: white;
+        display: flex; align-items: center; gap: 8px;
+      }
+      .sg-video-icon { font-size: 16px; }
+      .sg-video-info { flex: 1; }
+      .sg-video-title { font-size: 12px; font-weight: 600; color: #1e293b; }
+      .sg-video-desc { font-size: 11px; color: #64748b; margin-top: 1px;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+      /* KB Resource link cards (for unqualified leads) */
+      .sg-kb-links { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+      .sg-kb-link {
+        display: flex; align-items: center; gap: 8px;
+        padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0;
+        border-radius: 8px; text-decoration: none; color: #1e293b;
+        transition: all 0.2s; font-size: 13px;
+      }
+      .sg-kb-link:hover { background: #f0f4ff; border-color: ${config.brand_color}; transform: translateX(2px); }
+      .sg-kb-link-icon { font-size: 16px; flex-shrink: 0; }
+      .sg-kb-link-title { font-weight: 600; }
+      .sg-kb-link-desc { font-size: 11px; color: #64748b; margin-top: 1px; }
+
       .sg-calendly {
         margin-top: 8px; padding: 12px; background: #ecfdf5;
         border: 1px solid #6ee7b7; border-radius: 10px; text-align: center;
@@ -309,11 +356,19 @@
       sessionId = data.session_id;
       localStorage.setItem(`sg_session_${ORG_SLUG}`, sessionId);
 
-      addBotMessage(data.reply);
+      addBotMessage(data.reply, data.resource);
 
-      // Show resource card if KB matched
+      // Show resource card if KB matched (citation)
       if (data.resource) {
         addResourceCard(data.resource);
+      }
+
+      // Show video and link resources from kb_resources
+      if (data.kb_resources && data.kb_resources.length > 0) {
+        const videos = data.kb_resources.filter(r => r.type === 'video');
+        const links = data.kb_resources.filter(r => r.type !== 'video');
+        videos.forEach(v => addVideoCard(v));
+        if (links.length > 0) addKBResourceLinks(links);
       }
 
       // Show Calendly if triggered
@@ -344,14 +399,27 @@
     scrollToBottom();
   }
 
-  function addBotMessage(text) {
+  function addBotMessage(text, resource) {
     messages.push({ role: "assistant", content: text });
     const container = document.getElementById("sg-messages");
     const el = document.createElement("div");
     el.className = "sg-msg sg-msg-bot";
+
+    // Format reply with citation badges if KB resource was used
+    let formattedText = escapeHtml(text);
+    if (resource && resource.source_file) {
+      // Add inline citation badge at end of message
+      const citationBadge = `<span class="sg-citation">` +
+        `<span class="sg-citation-icon">📎</span>` +
+        `<span class="sg-citation-source">${escapeHtml(resource.source_file)}</span>` +
+        `<span class="sg-citation-score">${resource.relevance_score}%</span>` +
+        `</span>`;
+      formattedText += `<br>${citationBadge}`;
+    }
+
     el.innerHTML = `
       <div class="sg-msg-avatar">SG</div>
-      <div class="sg-msg-bubble">${escapeHtml(text)}</div>
+      <div class="sg-msg-bubble">${formattedText}</div>
     `;
     container.appendChild(el);
     scrollToBottom();
@@ -363,9 +431,90 @@
     el.className = "sg-resource";
     el.innerHTML = `
       <div class="sg-resource-title">📄 ${escapeHtml(resource.title)}</div>
-      <div class="sg-resource-meta">${escapeHtml(resource.source_file)} · ${resource.relevance_score}% match</div>
+      <div class="sg-resource-meta">
+        <span>Source: ${escapeHtml(resource.source_file)}</span>
+        <span style="margin-left:6px;background:#6366f1;color:white;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;">${resource.relevance_score}% match</span>
+      </div>
     `;
     container.appendChild(el);
+    scrollToBottom();
+  }
+
+  function addVideoCard(resource) {
+    const container = document.getElementById("sg-messages");
+    const el = document.createElement("div");
+    el.className = "sg-video-card";
+
+    let embedHtml = '';
+    const url = resource.url || '';
+
+    // YouTube embed
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
+    if (ytMatch) {
+      embedHtml = `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?rel=0" allowfullscreen loading="lazy"></iframe>`;
+    }
+    // Vimeo embed
+    else if (url.includes('vimeo.com')) {
+      const vimeoId = url.match(/vimeo\.com\/(\d+)/);
+      if (vimeoId) {
+        embedHtml = `<iframe src="https://player.vimeo.com/video/${vimeoId[1]}" allowfullscreen loading="lazy"></iframe>`;
+      }
+    }
+    // Loom embed
+    else if (url.includes('loom.com')) {
+      const loomId = url.match(/loom\.com\/share\/(\w+)/);
+      if (loomId) {
+        embedHtml = `<iframe src="https://www.loom.com/embed/${loomId[1]}" allowfullscreen loading="lazy"></iframe>`;
+      }
+    }
+    // Direct video URL
+    else if (url.match(/\.(mp4|webm|ogg)$/i)) {
+      embedHtml = `<video controls preload="metadata"><source src="${escapeHtml(url)}"></video>`;
+    }
+    // Fallback: just a link
+    else {
+      embedHtml = `<div style="padding:30px;text-align:center;">
+        <a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="color:#6366f1;font-size:14px;font-weight:600;text-decoration:none;">▶ Watch Video</a>
+      </div>`;
+    }
+
+    el.innerHTML = `
+      ${embedHtml}
+      <div class="sg-video-meta">
+        <span class="sg-video-icon">🎥</span>
+        <div class="sg-video-info">
+          <div class="sg-video-title">${escapeHtml(resource.title)}</div>
+          <div class="sg-video-desc">${escapeHtml(resource.description || '')}</div>
+        </div>
+      </div>
+    `;
+    container.appendChild(el);
+    scrollToBottom();
+  }
+
+  function addKBResourceLinks(resources) {
+    const container = document.getElementById("sg-messages");
+    const wrapper = document.createElement("div");
+    wrapper.className = "sg-kb-links";
+
+    resources.forEach(r => {
+      const icon = r.type === 'spec' ? '📋' : r.type === 'guide' ? '📖' : r.type === 'doc' ? '📄' : '🔗';
+      const link = document.createElement("a");
+      link.className = "sg-kb-link";
+      link.href = r.url;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.innerHTML = `
+        <span class="sg-kb-link-icon">${icon}</span>
+        <div>
+          <div class="sg-kb-link-title">${escapeHtml(r.title)}</div>
+          <div class="sg-kb-link-desc">${escapeHtml(r.description || '')}</div>
+        </div>
+      `;
+      wrapper.appendChild(link);
+    });
+
+    container.appendChild(wrapper);
     scrollToBottom();
   }
 
