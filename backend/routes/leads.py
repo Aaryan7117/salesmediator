@@ -50,6 +50,8 @@ def _row_to_list_item(row: dict) -> LeadListItem:
         intent_score=row.get("intent_score", 0),
         intent_state=row.get("intent_state", "Exploring"),
         signals=row.get("signals") or [],
+        qualification_status=row.get("qualification_status", "collecting"),
+        qualification_checklist=row.get("qualification_checklist"),
         updated_at=row.get("updated_at"),
     )
 
@@ -69,6 +71,8 @@ def _row_to_detail(row: dict) -> LeadResponse:
         crm_filed=row.get("crm_filed", False),
         github_issue_url=row.get("github_issue_url"),
         calendly_shown=row.get("calendly_shown", False),
+        qualification_status=row.get("qualification_status", "collecting"),
+        qualification_checklist=row.get("qualification_checklist"),
         created_at=row.get("created_at"),
         updated_at=row.get("updated_at"),
     )
@@ -86,7 +90,7 @@ async def list_leads(request: Request):
 
     query = (
         sb.table("leads")
-        .select("id, session_id, persona, intent_score, intent_state, signals, updated_at")
+        .select("id, session_id, persona, intent_score, intent_state, signals, updated_at, qualification_status, qualification_checklist")
         .eq("org_id", user["org_id"])
         .order("intent_score", desc=True)
     )
@@ -107,7 +111,7 @@ async def my_leads(request: Request):
 
     result = (
         sb.table("leads")
-        .select("id, session_id, persona, intent_score, intent_state, signals, updated_at")
+        .select("id, session_id, persona, intent_score, intent_state, signals, updated_at, qualification_status, qualification_checklist")
         .eq("org_id", user["org_id"])
         .eq("assigned_rep_id", user["user_id"])
         .order("intent_score", desc=True)
