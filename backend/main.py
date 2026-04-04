@@ -75,33 +75,13 @@ app = FastAPI(
 )
 
 # ---------------------------------------------------------------------------
-# CORS
+# CORS — Widget SDK must work from ANY customer website (any domain / file://)
+# We use Bearer tokens, not cookies, so credentials=False is fine.
 # ---------------------------------------------------------------------------
-_raw_origins = (
-    [o.strip() for o in settings.cors_origins.split(",")]
-    if settings.cors_origins != "*"
-    else ["*"]
-)
-
-# Always include the production frontend explicitly
-_known_frontends = [
-    "https://salesgen-dashboard.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:3000",
-]
-
-if _raw_origins == ["*"]:
-    # Wildcard + credentials is forbidden by the CORS spec.
-    # Use explicit list so allow_credentials=True works correctly.
-    origins = _known_frontends
-else:
-    # Merge env-configured origins with known frontends (deduplicated)
-    origins = list(dict.fromkeys(_raw_origins + _known_frontends))
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

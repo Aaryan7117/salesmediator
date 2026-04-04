@@ -1,327 +1,669 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EduFlow — Turn your team's potential into performance</title>
-<meta name="description" content="EduFlow delivers personalised learning paths, real-time progress tracking, and manager insights — all in one platform your team will actually use.">
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-*{font-family:'Inter',sans-serif;}
-.faq-answer{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s ease}
-.faq-answer.open{max-height:300px;padding-bottom:16px}
-@media(max-width:768px){.nav-links{display:none!important}.nav-links.open{display:flex!important;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:white;padding:16px;border-bottom:1px solid #E5E7EB;z-index:100;gap:12px}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduFlow — Turn your team's potential into performance</title>
+  <meta name="description"
+    content="EduFlow delivers personalised learning paths, real-time progress tracking, and manager insights — all in one platform your team will actually use.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .3s ease, padding .3s ease
+    }
+
+    .faq-answer.open {
+      max-height: 300px;
+      padding-bottom: 16px
+    }
+
+    @media(max-width:768px) {
+      .nav-links {
+        display: none !important
+      }
+
+      .nav-links.open {
+        display: flex !important;
+        flex-direction: column;
+        position: absolute;
+        top: 64px;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 16px;
+        border-bottom: 1px solid #E5E7EB;
+        z-index: 100;
+        gap: 12px
+      }
+    }
+  </style>
 </head>
+
 <body class="bg-white text-gray-900">
 
-<!-- SECTION 1: NAV -->
-<nav class="sticky top-0 bg-white border-b border-gray-200 z-50">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-<div class="flex items-center gap-2">
-<div class="w-7 h-7 rounded-md" style="background:linear-gradient(135deg,#1D9E75,#534AB7)"></div>
-<span class="text-lg font-bold text-gray-900">EduFlow</span>
-</div>
-<div class="nav-links hidden md:flex items-center gap-8">
-<a href="#features" class="text-sm text-gray-500 hover:text-gray-900 font-medium">Features</a>
-<a href="#pricing" class="text-sm text-gray-500 hover:text-gray-900 font-medium">Pricing</a>
-<a href="#testimonials" class="text-sm text-gray-500 hover:text-gray-900 font-medium">Customers</a>
-<a href="#faq" class="text-sm text-gray-500 hover:text-gray-900 font-medium">Resources</a>
-</div>
-<div class="flex items-center gap-3">
-<a href="#" class="hidden sm:inline text-sm text-gray-600 hover:text-gray-900 font-medium">Sign in</a>
-<a href="#" class="text-sm bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-emerald-700" style="background:#1D9E75">Start free trial</a>
-<button id="hamburger" class="md:hidden p-1" onclick="document.querySelector('.nav-links').classList.toggle('open')">
-<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-</button>
-</div>
-</div>
-</nav>
+  <!-- SECTION 1: NAV -->
+  <nav class="sticky top-0 bg-white border-b border-gray-200 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-md" style="background:linear-gradient(135deg,#1D9E75,#534AB7)"></div>
+        <span class="text-lg font-bold text-gray-900">EduFlow</span>
+      </div>
+      <div class="nav-links hidden md:flex items-center gap-8">
+        <a href="#features" class="text-sm text-gray-500 hover:text-gray-900 font-medium">Features</a>
+        <a href="#pricing" class="text-sm text-gray-500 hover:text-gray-900 font-medium">Pricing</a>
+        <a href="#testimonials" class="text-sm text-gray-500 hover:text-gray-900 font-medium">Customers</a>
+        <a href="#faq" class="text-sm text-gray-500 hover:text-gray-900 font-medium">Resources</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="#" class="hidden sm:inline text-sm text-gray-600 hover:text-gray-900 font-medium">Sign in</a>
+        <a href="#" class="text-sm bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-emerald-700"
+          style="background:#1D9E75">Start free trial</a>
+        <button id="hamburger" class="md:hidden p-1"
+          onclick="document.querySelector('.nav-links').classList.toggle('open')">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
 
-<!-- SECTION 2: HERO -->
-<section class="max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-24">
-<div class="grid md:grid-cols-2 gap-12 items-center">
-<div>
-<div class="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-6" style="background:#E1F5EE;color:#085041">Trusted by 1,200+ companies</div>
-<h1 class="text-4xl md:text-5xl lg:text-[56px] font-bold text-gray-900 leading-tight mb-6">Your team learns faster when training fits how they work</h1>
-<p class="text-lg text-gray-500 leading-relaxed mb-8" style="max-width:520px">EduFlow delivers personalised learning paths, real-time progress tracking, and manager insights — all in one platform your team will actually use.</p>
-<div class="flex flex-wrap gap-3 mb-4">
-<a href="#" class="inline-flex items-center px-7 py-3.5 rounded-xl text-base font-semibold text-white" style="background:#1D9E75">Start free trial</a>
-<a href="#" class="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-base font-semibold border-2" style="color:#1D9E75;border-color:#1D9E75">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="#1D9E75"><circle cx="12" cy="12" r="10" fill="none" stroke="#1D9E75" stroke-width="2"/><polygon points="10,8 16,12 10,16" fill="#1D9E75"/></svg>
-Watch 2-min demo</a>
-</div>
-<p class="text-xs text-gray-400 mb-8">No credit card required · Setup in one afternoon · Cancel anytime</p>
-<div class="flex flex-wrap gap-4 text-sm font-semibold text-gray-300">
-<span>Meridian Corp</span><span>·</span><span>Vantage Group</span><span>·</span><span>Nexlify</span><span>·</span><span>Brightwell</span><span>·</span><span>Orion Systems</span>
-</div>
-</div>
-<div class="bg-white rounded-2xl border border-gray-200 p-5" style="box-shadow:0 4px 24px rgba(0,0,0,.08)">
-<div class="grid grid-cols-3 gap-3 mb-5">
-<div class="rounded-xl p-4 text-center" style="background:#1D9E75"><div class="text-2xl font-bold text-white">94%</div><div class="text-xs text-white/80">Completion rate</div></div>
-<div class="rounded-xl p-4 text-center" style="background:#534AB7"><div class="text-2xl font-bold text-white">1,247</div><div class="text-xs text-white/80">Active learners</div></div>
-<div class="rounded-xl p-4 text-center" style="background:#BA7517"><div class="text-2xl font-bold text-white">4.8★</div><div class="text-xs text-white/80">Avg rating</div></div>
-</div>
-<div class="space-y-3 mb-5">
-<div><div class="flex justify-between text-xs text-gray-500 mb-1"><span>Sales</span><span>85%</span></div><div class="h-2 bg-gray-100 rounded-full"><div class="h-2 rounded-full" style="width:85%;background:#1D9E75"></div></div></div>
-<div><div class="flex justify-between text-xs text-gray-500 mb-1"><span>Engineering</span><span>90%</span></div><div class="h-2 bg-gray-100 rounded-full"><div class="h-2 rounded-full" style="width:90%;background:#534AB7"></div></div></div>
-<div><div class="flex justify-between text-xs text-gray-500 mb-1"><span>HR</span><span>60%</span></div><div class="h-2 bg-gray-100 rounded-full"><div class="h-2 rounded-full" style="width:60%;background:#1D9E75"></div></div></div>
-<div><div class="flex justify-between text-xs text-gray-500 mb-1"><span>Marketing</span><span>70%</span></div><div class="h-2 bg-gray-100 rounded-full"><div class="h-2 rounded-full" style="width:70%;background:#BA7517"></div></div></div>
-<div><div class="flex justify-between text-xs text-gray-500 mb-1"><span>Support</span><span>45%</span></div><div class="h-2 bg-gray-100 rounded-full"><div class="h-2 rounded-full" style="width:45%;background:#534AB7"></div></div></div>
-</div>
-<div class="space-y-3">
-<div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:#1D9E75">AL</div><div class="flex-1"><div class="text-sm font-medium">Anna Lee</div><div class="text-xs text-gray-400">Sales Manager</div></div><div class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:#E1F5EE;color:#085041">92% complete</div></div>
-<div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:#534AB7">MR</div><div class="flex-1"><div class="text-sm font-medium">Marcus Rivera</div><div class="text-xs text-gray-400">Engineering Lead</div></div><div class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:#E1F5EE;color:#085041">78% complete</div></div>
-</div>
-</div>
-</div>
-</section>
+  <!-- SECTION 2: HERO -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-24">
+    <div class="grid md:grid-cols-2 gap-12 items-center">
+      <div>
+        <div class="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-6"
+          style="background:#E1F5EE;color:#085041">Trusted by 1,200+ companies</div>
+        <h1 class="text-4xl md:text-5xl lg:text-[56px] font-bold text-gray-900 leading-tight mb-6">Your team learns
+          faster when training fits how they work</h1>
+        <p class="text-lg text-gray-500 leading-relaxed mb-8" style="max-width:520px">EduFlow delivers personalised
+          learning paths, real-time progress tracking, and manager insights — all in one platform your team will
+          actually use.</p>
+        <div class="flex flex-wrap gap-3 mb-4">
+          <a href="#" class="inline-flex items-center px-7 py-3.5 rounded-xl text-base font-semibold text-white"
+            style="background:#1D9E75">Start free trial</a>
+          <a href="#" class="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-base font-semibold border-2"
+            style="color:#1D9E75;border-color:#1D9E75">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#1D9E75">
+              <circle cx="12" cy="12" r="10" fill="none" stroke="#1D9E75" stroke-width="2" />
+              <polygon points="10,8 16,12 10,16" fill="#1D9E75" />
+            </svg>
+            Watch 2-min demo</a>
+        </div>
+        <p class="text-xs text-gray-400 mb-8">No credit card required · Setup in one afternoon · Cancel anytime</p>
+        <div class="flex flex-wrap gap-4 text-sm font-semibold text-gray-300">
+          <span>Meridian Corp</span><span>·</span><span>Vantage
+            Group</span><span>·</span><span>Nexlify</span><span>·</span><span>Brightwell</span><span>·</span><span>Orion
+            Systems</span>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-200 p-5" style="box-shadow:0 4px 24px rgba(0,0,0,.08)">
+        <div class="grid grid-cols-3 gap-3 mb-5">
+          <div class="rounded-xl p-4 text-center" style="background:#1D9E75">
+            <div class="text-2xl font-bold text-white">94%</div>
+            <div class="text-xs text-white/80">Completion rate</div>
+          </div>
+          <div class="rounded-xl p-4 text-center" style="background:#534AB7">
+            <div class="text-2xl font-bold text-white">1,247</div>
+            <div class="text-xs text-white/80">Active learners</div>
+          </div>
+          <div class="rounded-xl p-4 text-center" style="background:#BA7517">
+            <div class="text-2xl font-bold text-white">4.8★</div>
+            <div class="text-xs text-white/80">Avg rating</div>
+          </div>
+        </div>
+        <div class="space-y-3 mb-5">
+          <div>
+            <div class="flex justify-between text-xs text-gray-500 mb-1"><span>Sales</span><span>85%</span></div>
+            <div class="h-2 bg-gray-100 rounded-full">
+              <div class="h-2 rounded-full" style="width:85%;background:#1D9E75"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs text-gray-500 mb-1"><span>Engineering</span><span>90%</span></div>
+            <div class="h-2 bg-gray-100 rounded-full">
+              <div class="h-2 rounded-full" style="width:90%;background:#534AB7"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs text-gray-500 mb-1"><span>HR</span><span>60%</span></div>
+            <div class="h-2 bg-gray-100 rounded-full">
+              <div class="h-2 rounded-full" style="width:60%;background:#1D9E75"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs text-gray-500 mb-1"><span>Marketing</span><span>70%</span></div>
+            <div class="h-2 bg-gray-100 rounded-full">
+              <div class="h-2 rounded-full" style="width:70%;background:#BA7517"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs text-gray-500 mb-1"><span>Support</span><span>45%</span></div>
+            <div class="h-2 bg-gray-100 rounded-full">
+              <div class="h-2 rounded-full" style="width:45%;background:#534AB7"></div>
+            </div>
+          </div>
+        </div>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
+              style="background:#1D9E75">AL</div>
+            <div class="flex-1">
+              <div class="text-sm font-medium">Anna Lee</div>
+              <div class="text-xs text-gray-400">Sales Manager</div>
+            </div>
+            <div class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:#E1F5EE;color:#085041">92%
+              complete</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
+              style="background:#534AB7">MR</div>
+            <div class="flex-1">
+              <div class="text-sm font-medium">Marcus Rivera</div>
+              <div class="text-xs text-gray-400">Engineering Lead</div>
+            </div>
+            <div class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:#E1F5EE;color:#085041">78%
+              complete</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<!-- SECTION 3: SOCIAL PROOF BAR -->
-<section class="bg-gray-50 border-y border-gray-200 py-8">
-<div class="max-w-5xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-<div><div class="text-2xl md:text-3xl font-bold text-gray-900">1,200+</div><div class="text-sm text-gray-500">companies</div></div>
-<div class="md:border-l border-gray-200"><div class="text-2xl md:text-3xl font-bold text-gray-900">94%</div><div class="text-sm text-gray-500">completion rate</div></div>
-<div class="md:border-l border-gray-200"><div class="text-2xl md:text-3xl font-bold text-gray-900">4.8/5</div><div class="text-sm text-gray-500">average rating</div></div>
-<div class="md:border-l border-gray-200"><div class="text-2xl md:text-3xl font-bold text-gray-900">3×</div><div class="text-sm text-gray-500">faster onboarding</div></div>
-</div>
-</section>
+  <!-- SECTION 3: SOCIAL PROOF BAR -->
+  <section class="bg-gray-50 border-y border-gray-200 py-8">
+    <div class="max-w-5xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+      <div>
+        <div class="text-2xl md:text-3xl font-bold text-gray-900">1,200+</div>
+        <div class="text-sm text-gray-500">companies</div>
+      </div>
+      <div class="md:border-l border-gray-200">
+        <div class="text-2xl md:text-3xl font-bold text-gray-900">94%</div>
+        <div class="text-sm text-gray-500">completion rate</div>
+      </div>
+      <div class="md:border-l border-gray-200">
+        <div class="text-2xl md:text-3xl font-bold text-gray-900">4.8/5</div>
+        <div class="text-sm text-gray-500">average rating</div>
+      </div>
+      <div class="md:border-l border-gray-200">
+        <div class="text-2xl md:text-3xl font-bold text-gray-900">3×</div>
+        <div class="text-sm text-gray-500">faster onboarding</div>
+      </div>
+    </div>
+  </section>
 
-<!-- SECTION 4: FEATURES -->
-<section id="features" class="max-w-7xl mx-auto px-4 sm:px-6 py-20">
-<div class="text-center mb-14">
-<h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Everything your L&D team needs</h2>
-<p class="text-gray-500 text-lg max-w-2xl mx-auto">One platform to create, assign, track, and improve training across your entire organisation.</p>
-</div>
-<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-<div class="bg-white border border-gray-200 rounded-xl p-6 hover:border-emerald-400 transition-colors">
-<div class="w-10 h-10 rounded-full flex items-center justify-center mb-4" style="background:#E1F5EE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2"><path d="M6 3v18"/><path d="M6 9h6l3-3 3 3h0"/><path d="M18 9v12"/></svg></div>
-<h3 class="font-semibold text-gray-900 mb-2">Personalised learning paths</h3>
-<p class="text-sm text-gray-500 leading-relaxed">AI adapts content to each employee's role, level, and skill gaps automatically.</p>
-</div>
-<div class="bg-white border border-gray-200 rounded-xl p-6 hover:border-emerald-400 transition-colors">
-<div class="w-10 h-10 rounded-full flex items-center justify-center mb-4" style="background:#E1F5EE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2"><rect x="3" y="10" width="4" height="10" rx="1"/><rect x="10" y="5" width="4" height="15" rx="1"/><rect x="17" y="1" width="4" height="19" rx="1"/></svg></div>
-<h3 class="font-semibold text-gray-900 mb-2">Progress analytics</h3>
-<p class="text-sm text-gray-500 leading-relaxed">Real-time dashboards give managers and HR leaders full visibility into team development.</p>
-</div>
-<div class="bg-white border border-gray-200 rounded-xl p-6 hover:border-emerald-400 transition-colors">
-<div class="w-10 h-10 rounded-full flex items-center justify-center mb-4" style="background:#E1F5EE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
-<h3 class="font-semibold text-gray-900 mb-2">500+ course library</h3>
-<p class="text-sm text-gray-500 leading-relaxed">Off-the-shelf content across business, tech, and compliance — plus upload your own.</p>
-</div>
-<div class="bg-white border border-gray-200 rounded-xl p-6 hover:border-emerald-400 transition-colors">
-<div class="w-10 h-10 rounded-full flex items-center justify-center mb-4" style="background:#E1F5EE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2"><path d="M12 2v6m0 8v6M4.93 4.93l4.24 4.24m5.66 5.66l4.24 4.24M2 12h6m8 0h6M4.93 19.07l4.24-4.24m5.66-5.66l4.24-4.24"/></svg></div>
-<h3 class="font-semibold text-gray-900 mb-2">40+ integrations</h3>
-<p class="text-sm text-gray-500 leading-relaxed">Native connections to Slack, BambooHR, Workday, Salesforce, and your existing HRIS.</p>
-</div>
-<div class="bg-white border border-gray-200 rounded-xl p-6 hover:border-emerald-400 transition-colors">
-<div class="w-10 h-10 rounded-full flex items-center justify-center mb-4" style="background:#E1F5EE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
-<h3 class="font-semibold text-gray-900 mb-2">Mobile learning</h3>
-<p class="text-sm text-gray-500 leading-relaxed">Employees learn on any device, even offline. Progress syncs when they reconnect.</p>
-</div>
-<div class="bg-white border border-gray-200 rounded-xl p-6 hover:border-emerald-400 transition-colors">
-<div class="w-10 h-10 rounded-full flex items-center justify-center mb-4" style="background:#E1F5EE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></div>
-<h3 class="font-semibold text-gray-900 mb-2">Compliance tracking</h3>
-<p class="text-sm text-gray-500 leading-relaxed">Automated certification management and audit-ready reports for regulated industries.</p>
-</div>
-</div>
-</section>
+  <!-- SECTION 4: FEATURES -->
+  <section id="features" class="max-w-7xl mx-auto px-4 sm:px-6 py-20">
+    <div class="text-center mb-14">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Everything your L&D team needs</h2>
+      <p class="text-gray-500 text-lg max-w-2xl mx-auto">One platform to create, assign, track, and improve training
+        across your entire organisation.</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="bg-white border border-gray-200 rounded-xl p-6 hover:border-emerald-400 transition-colors">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center mb-4" style="background:#E1F5EE"><svg
+            width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2">
+            <path d="M6 3v18" />
+            <path d="M6 9h6l3-3 3 3h0" />
+            <path d="M18 9v12" />
+          </svg></div>
+        <h3 class="font-semibold text-gray-900 mb-2">Personalised learning paths</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">AI adapts content to each employee's role, level, and skill
+          gaps automatically.</p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-6 hover:border-emerald-400 transition-colors">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center mb-4" style="background:#E1F5EE"><svg
+            width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2">
+            <rect x="3" y="10" width="4" height="10" rx="1" />
+            <rect x="10" y="5" width="4" height="15" rx="1" />
+            <rect x="17" y="1" width="4" height="19" rx="1" />
+          </svg></div>
+        <h3 class="font-semibold text-gray-900 mb-2">Progress analytics</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Real-time dashboards give managers and HR leaders full
+          visibility into team development.</p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-6 hover:border-emerald-400 transition-colors">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center mb-4" style="background:#E1F5EE"><svg
+            width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+          </svg></div>
+        <h3 class="font-semibold text-gray-900 mb-2">500+ course library</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Off-the-shelf content across business, tech, and compliance —
+          plus upload your own.</p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-6 hover:border-emerald-400 transition-colors">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center mb-4" style="background:#E1F5EE"><svg
+            width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2">
+            <path
+              d="M12 2v6m0 8v6M4.93 4.93l4.24 4.24m5.66 5.66l4.24 4.24M2 12h6m8 0h6M4.93 19.07l4.24-4.24m5.66-5.66l4.24-4.24" />
+          </svg></div>
+        <h3 class="font-semibold text-gray-900 mb-2">40+ integrations</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Native connections to Slack, BambooHR, Workday, Salesforce, and
+          your existing HRIS.</p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-6 hover:border-emerald-400 transition-colors">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center mb-4" style="background:#E1F5EE"><svg
+            width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+            <line x1="12" y1="18" x2="12.01" y2="18" />
+          </svg></div>
+        <h3 class="font-semibold text-gray-900 mb-2">Mobile learning</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Employees learn on any device, even offline. Progress syncs
+          when they reconnect.</p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-6 hover:border-emerald-400 transition-colors">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center mb-4" style="background:#E1F5EE"><svg
+            width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <polyline points="9 12 11 14 15 10" />
+          </svg></div>
+        <h3 class="font-semibold text-gray-900 mb-2">Compliance tracking</h3>
+        <p class="text-sm text-gray-500 leading-relaxed">Automated certification management and audit-ready reports for
+          regulated industries.</p>
+      </div>
+    </div>
+  </section>
 
-<!-- SECTION 5: HOW IT WORKS -->
-<section class="bg-gray-50 py-20">
-<div class="max-w-5xl mx-auto px-4 sm:px-6">
-<div class="text-center mb-14">
-<h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Up and running in one afternoon</h2>
-<p class="text-gray-500 text-lg">No IT team required. No six-month implementation. Just results.</p>
-</div>
-<div class="grid md:grid-cols-3 gap-8 relative">
-<div class="hidden md:block absolute top-6 left-[20%] right-[20%] border-t-2 border-dashed border-gray-300" style="z-index:0"></div>
-<div class="text-center relative z-10">
-<div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold mx-auto mb-4" style="background:#1D9E75">1</div>
-<h3 class="font-semibold text-gray-900 mb-2">Upload your content</h3>
-<p class="text-sm text-gray-500 leading-relaxed">Drag in existing training materials, SCORM files, or videos — or choose from our 500+ course library.</p>
-</div>
-<div class="text-center relative z-10">
-<div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold mx-auto mb-4" style="background:#1D9E75">2</div>
-<h3 class="font-semibold text-gray-900 mb-2">Assign to your team</h3>
-<p class="text-sm text-gray-500 leading-relaxed">Build learning paths by role, department, or individual. Set deadlines and reminders automatically.</p>
-</div>
-<div class="text-center relative z-10">
-<div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold mx-auto mb-4" style="background:#1D9E75">3</div>
-<h3 class="font-semibold text-gray-900 mb-2">Track everything</h3>
-<p class="text-sm text-gray-500 leading-relaxed">See completion rates, quiz scores, and skill gaps in one real-time dashboard. Export for audits in one click.</p>
-</div>
-</div>
-</div>
-</section>
+  <!-- SECTION 5: HOW IT WORKS -->
+  <section class="bg-gray-50 py-20">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Up and running in one afternoon</h2>
+        <p class="text-gray-500 text-lg">No IT team required. No six-month implementation. Just results.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8 relative">
+        <div class="hidden md:block absolute top-6 left-[20%] right-[20%] border-t-2 border-dashed border-gray-300"
+          style="z-index:0"></div>
+        <div class="text-center relative z-10">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold mx-auto mb-4"
+            style="background:#1D9E75">1</div>
+          <h3 class="font-semibold text-gray-900 mb-2">Upload your content</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">Drag in existing training materials, SCORM files, or videos —
+            or choose from our 500+ course library.</p>
+        </div>
+        <div class="text-center relative z-10">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold mx-auto mb-4"
+            style="background:#1D9E75">2</div>
+          <h3 class="font-semibold text-gray-900 mb-2">Assign to your team</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">Build learning paths by role, department, or individual. Set
+            deadlines and reminders automatically.</p>
+        </div>
+        <div class="text-center relative z-10">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold mx-auto mb-4"
+            style="background:#1D9E75">3</div>
+          <h3 class="font-semibold text-gray-900 mb-2">Track everything</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">See completion rates, quiz scores, and skill gaps in one
+            real-time dashboard. Export for audits in one click.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<!-- SECTION 6: PRICING -->
-<section id="pricing" class="max-w-7xl mx-auto px-4 sm:px-6 py-20">
-<div class="text-center mb-14">
-<h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Simple, transparent pricing</h2>
-<p class="text-gray-500 text-lg">Start free. Scale as your team grows. No hidden fees.</p>
-</div>
-<div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-<div class="bg-white border border-gray-200 rounded-2xl p-8">
-<h3 class="text-lg font-bold text-gray-900 mb-1">Starter</h3>
-<p class="text-sm text-gray-500 mb-4">For teams getting started with structured learning</p>
-<div class="mb-1"><span class="text-4xl font-bold text-gray-900">$299</span><span class="text-gray-500">/mo</span></div>
-<p class="text-xs text-gray-400 mb-6">$239/mo billed annually</p>
-<p class="text-sm text-gray-500 mb-4">Up to 50 users</p>
-<ul class="space-y-2 mb-8 text-sm text-gray-600">
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Core course library (200+ courses)</li>
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Basic progress tracking</li>
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Email support</li>
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Mobile app access</li>
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>CSV reporting</li>
-</ul>
-<a href="#" class="block text-center py-3 rounded-xl font-semibold border-2 text-sm" style="color:#1D9E75;border-color:#1D9E75">Start free trial</a>
-</div>
-<div class="bg-white border-2 rounded-2xl p-8 relative shadow-lg" style="border-color:#1D9E75">
-<div class="absolute -top-3 right-6 px-3 py-1 rounded-full text-xs font-bold text-white" style="background:#1D9E75">Most popular</div>
-<h3 class="text-lg font-bold text-gray-900 mb-1">Growth</h3>
-<p class="text-sm text-gray-500 mb-4">For growing teams that need full visibility</p>
-<div class="mb-1"><span class="text-4xl font-bold text-gray-900">$799</span><span class="text-gray-500">/mo</span></div>
-<p class="text-xs text-gray-400 mb-6">$639/mo billed annually</p>
-<p class="text-sm text-gray-500 mb-4">Up to 200 users</p>
-<ul class="space-y-2 mb-8 text-sm text-gray-600">
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Everything in Starter</li>
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Full analytics dashboard</li>
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>40+ integrations (Slack, HRIS, CRM)</li>
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Custom learning paths</li>
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Priority support</li>
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Manager dashboards</li>
-</ul>
-<a href="#" class="block text-center py-3 rounded-xl font-semibold text-sm text-white" style="background:#1D9E75">Start free trial</a>
-</div>
-<div class="bg-white border border-gray-200 rounded-2xl p-8">
-<h3 class="text-lg font-bold text-gray-900 mb-1">Enterprise</h3>
-<p class="text-sm text-gray-500 mb-4">For large organisations with complex needs</p>
-<div class="mb-1"><span class="text-4xl font-bold text-gray-900">Custom</span></div>
-<p class="text-xs text-gray-400 mb-6">Tailored pricing</p>
-<p class="text-sm text-gray-500 mb-4">Unlimited users</p>
-<ul class="space-y-2 mb-8 text-sm text-gray-600">
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Everything in Growth</li>
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Custom content creation</li>
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Dedicated Customer Success Manager</li>
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>SSO and advanced security</li>
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>SLA guarantee</li>
-<li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Custom integrations</li>
-</ul>
-<a href="#" class="block text-center py-3 rounded-xl font-semibold text-sm border-2 border-gray-300 text-gray-700 hover:border-gray-500">Talk to sales</a>
-</div>
-</div>
-<p class="text-center text-sm text-gray-400 mt-8">All plans include a 14-day free trial. No credit card required.</p>
-</section>
+  <!-- SECTION 6: PRICING -->
+  <section id="pricing" class="max-w-7xl mx-auto px-4 sm:px-6 py-20">
+    <div class="text-center mb-14">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Simple, transparent pricing</h2>
+      <p class="text-gray-500 text-lg">Start free. Scale as your team grows. No hidden fees.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <div class="bg-white border border-gray-200 rounded-2xl p-8">
+        <h3 class="text-lg font-bold text-gray-900 mb-1">Starter</h3>
+        <p class="text-sm text-gray-500 mb-4">For teams getting started with structured learning</p>
+        <div class="mb-1"><span class="text-4xl font-bold text-gray-900">$299</span><span
+            class="text-gray-500">/mo</span></div>
+        <p class="text-xs text-gray-400 mb-6">$239/mo billed annually</p>
+        <p class="text-sm text-gray-500 mb-4">Up to 50 users</p>
+        <ul class="space-y-2 mb-8 text-sm text-gray-600">
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>Core course library (200+ courses)</li>
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>Basic progress tracking</li>
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>Email support</li>
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>Mobile app access</li>
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>CSV reporting</li>
+        </ul>
+        <a href="#" class="block text-center py-3 rounded-xl font-semibold border-2 text-sm"
+          style="color:#1D9E75;border-color:#1D9E75">Start free trial</a>
+      </div>
+      <div class="bg-white border-2 rounded-2xl p-8 relative shadow-lg" style="border-color:#1D9E75">
+        <div class="absolute -top-3 right-6 px-3 py-1 rounded-full text-xs font-bold text-white"
+          style="background:#1D9E75">Most popular</div>
+        <h3 class="text-lg font-bold text-gray-900 mb-1">Growth</h3>
+        <p class="text-sm text-gray-500 mb-4">For growing teams that need full visibility</p>
+        <div class="mb-1"><span class="text-4xl font-bold text-gray-900">$799</span><span
+            class="text-gray-500">/mo</span></div>
+        <p class="text-xs text-gray-400 mb-6">$639/mo billed annually</p>
+        <p class="text-sm text-gray-500 mb-4">Up to 200 users</p>
+        <ul class="space-y-2 mb-8 text-sm text-gray-600">
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>Everything in Starter</li>
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>Full analytics dashboard</li>
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>40+ integrations (Slack, HRIS, CRM)</li>
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>Custom learning paths</li>
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>Priority support</li>
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>Manager dashboards</li>
+        </ul>
+        <a href="#" class="block text-center py-3 rounded-xl font-semibold text-sm text-white"
+          style="background:#1D9E75">Start free trial</a>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-2xl p-8">
+        <h3 class="text-lg font-bold text-gray-900 mb-1">Enterprise</h3>
+        <p class="text-sm text-gray-500 mb-4">For large organisations with complex needs</p>
+        <div class="mb-1"><span class="text-4xl font-bold text-gray-900">Custom</span></div>
+        <p class="text-xs text-gray-400 mb-6">Tailored pricing</p>
+        <p class="text-sm text-gray-500 mb-4">Unlimited users</p>
+        <ul class="space-y-2 mb-8 text-sm text-gray-600">
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>Everything in Growth</li>
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>Custom content creation</li>
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>Dedicated Customer Success Manager</li>
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>SSO and advanced security</li>
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>SLA guarantee</li>
+          <li class="flex items-start gap-2"><svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="#1D9E75"
+              viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+            </svg>Custom integrations</li>
+        </ul>
+        <a href="#"
+          class="block text-center py-3 rounded-xl font-semibold text-sm border-2 border-gray-300 text-gray-700 hover:border-gray-500">Talk
+          to sales</a>
+      </div>
+    </div>
+    <p class="text-center text-sm text-gray-400 mt-8">All plans include a 14-day free trial. No credit card required.
+    </p>
+  </section>
 
-<!-- SECTION 7: TESTIMONIALS -->
-<section id="testimonials" class="bg-gray-50 py-20">
-<div class="max-w-7xl mx-auto px-4 sm:px-6">
-<h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-14 text-center">Loved by L&D teams worldwide</h2>
-<div class="grid md:grid-cols-3 gap-6">
-<div class="bg-white border border-gray-200 rounded-xl p-6">
-<div class="text-3xl mb-3" style="color:#1D9E75">"</div>
-<p class="text-gray-700 leading-relaxed mb-6">We onboarded 120 new hires in Q1 with half the HR hours we spent the year before. EduFlow basically runs itself.</p>
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:#1D9E75">SM</div>
-<div><div class="text-sm font-semibold text-gray-900">Sarah M.</div><div class="text-xs text-gray-500">Head of People · Meridian Corp</div></div>
-</div>
-</div>
-<div class="bg-white border border-gray-200 rounded-xl p-6">
-<div class="text-3xl mb-3" style="color:#534AB7">"</div>
-<p class="text-gray-700 leading-relaxed mb-6">Completion rates went from 34% to 91% in the first month. Our managers finally have real visibility into what their teams know.</p>
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:#534AB7">JT</div>
-<div><div class="text-sm font-semibold text-gray-900">James T.</div><div class="text-xs text-gray-500">L&D Director · Vantage Group</div></div>
-</div>
-</div>
-<div class="bg-white border border-gray-200 rounded-xl p-6">
-<div class="text-3xl mb-3" style="color:#BA7517">"</div>
-<p class="text-gray-700 leading-relaxed mb-6">The Salesforce integration alone saved us 6 hours a week. EduFlow connects to everything we already use.</p>
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:#BA7517">PK</div>
-<div><div class="text-sm font-semibold text-gray-900">Priya K.</div><div class="text-xs text-gray-500">VP of People · Nexlify</div></div>
-</div>
-</div>
-</div>
-</div>
-</section>
+  <!-- SECTION 7: TESTIMONIALS -->
+  <section id="testimonials" class="bg-gray-50 py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-14 text-center">Loved by L&D teams worldwide</h2>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="bg-white border border-gray-200 rounded-xl p-6">
+          <div class="text-3xl mb-3" style="color:#1D9E75">"</div>
+          <p class="text-gray-700 leading-relaxed mb-6">We onboarded 120 new hires in Q1 with half the HR hours we spent
+            the year before. EduFlow basically runs itself.</p>
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white"
+              style="background:#1D9E75">SM</div>
+            <div>
+              <div class="text-sm font-semibold text-gray-900">Sarah M.</div>
+              <div class="text-xs text-gray-500">Head of People · Meridian Corp</div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-xl p-6">
+          <div class="text-3xl mb-3" style="color:#534AB7">"</div>
+          <p class="text-gray-700 leading-relaxed mb-6">Completion rates went from 34% to 91% in the first month. Our
+            managers finally have real visibility into what their teams know.</p>
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white"
+              style="background:#534AB7">JT</div>
+            <div>
+              <div class="text-sm font-semibold text-gray-900">James T.</div>
+              <div class="text-xs text-gray-500">L&D Director · Vantage Group</div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-xl p-6">
+          <div class="text-3xl mb-3" style="color:#BA7517">"</div>
+          <p class="text-gray-700 leading-relaxed mb-6">The Salesforce integration alone saved us 6 hours a week.
+            EduFlow connects to everything we already use.</p>
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white"
+              style="background:#BA7517">PK</div>
+            <div>
+              <div class="text-sm font-semibold text-gray-900">Priya K.</div>
+              <div class="text-xs text-gray-500">VP of People · Nexlify</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<!-- SECTION 8: FAQ -->
-<section id="faq" class="max-w-3xl mx-auto px-4 sm:px-6 py-20">
-<h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-12 text-center">Common questions</h2>
-<div class="divide-y divide-gray-200">
-<div class="faq-item"><button class="w-full flex justify-between items-center py-5 text-left" onclick="toggleFaq(this)"><span class="font-semibold text-gray-900">How long does implementation take?</span><svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="faq-answer text-gray-500 text-sm leading-relaxed">Most teams are fully set up within one business day. We handle data migration and provide a dedicated onboarding specialist at no extra cost. Our average time-to-first-course is under 4 hours.</div></div>
-<div class="faq-item"><button class="w-full flex justify-between items-center py-5 text-left" onclick="toggleFaq(this)"><span class="font-semibold text-gray-900">Can we upload our own training content?</span><svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="faq-answer text-gray-500 text-sm leading-relaxed">Yes — EduFlow supports SCORM 1.2 and 2004, video (MP4, Vimeo, YouTube), PDF, PowerPoint, and Google Slides. Upload once, assign to any team or individual.</div></div>
-<div class="faq-item"><button class="w-full flex justify-between items-center py-5 text-left" onclick="toggleFaq(this)"><span class="font-semibold text-gray-900">How does EduFlow compare to LinkedIn Learning?</span><svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="faq-answer text-gray-500 text-sm leading-relaxed">LinkedIn Learning is excellent for individual skill-building. EduFlow is built for companies — with manager dashboards, compliance certification tracking, team-level analytics, custom content, and HRIS integrations that LinkedIn Learning does not offer.</div></div>
-<div class="faq-item"><button class="w-full flex justify-between items-center py-5 text-left" onclick="toggleFaq(this)"><span class="font-semibold text-gray-900">What is the pricing for a team of 80 people?</span><svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="faq-answer text-gray-500 text-sm leading-relaxed">Teams of 80 users typically start on our Growth plan at $799/month, which includes unlimited learning paths, full analytics, and all integrations. We also offer annual billing with a 20% discount — that brings it to $639/month. Happy to put together a custom quote.</div></div>
-<div class="faq-item"><button class="w-full flex justify-between items-center py-5 text-left" onclick="toggleFaq(this)"><span class="font-semibold text-gray-900">Do you integrate with Salesforce or HRIS tools?</span><svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><div class="faq-answer text-gray-500 text-sm leading-relaxed">Yes — we have native integrations with Salesforce, BambooHR, Workday, ADP, and Slack. Full REST API access is available on Growth and Enterprise plans for custom integrations.</div></div>
-</div>
-</section>
+  <!-- SECTION 8: FAQ -->
+  <section id="faq" class="max-w-3xl mx-auto px-4 sm:px-6 py-20">
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-12 text-center">Common questions</h2>
+    <div class="divide-y divide-gray-200">
+      <div class="faq-item"><button class="w-full flex justify-between items-center py-5 text-left"
+          onclick="toggleFaq(this)"><span class="font-semibold text-gray-900">How long does implementation
+            take?</span><svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 transition-transform" fill="none"
+            stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg></button>
+        <div class="faq-answer text-gray-500 text-sm leading-relaxed">Most teams are fully set up within one business
+          day. We handle data migration and provide a dedicated onboarding specialist at no extra cost. Our average
+          time-to-first-course is under 4 hours.</div>
+      </div>
+      <div class="faq-item"><button class="w-full flex justify-between items-center py-5 text-left"
+          onclick="toggleFaq(this)"><span class="font-semibold text-gray-900">Can we upload our own training
+            content?</span><svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 transition-transform" fill="none"
+            stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg></button>
+        <div class="faq-answer text-gray-500 text-sm leading-relaxed">Yes — EduFlow supports SCORM 1.2 and 2004, video
+          (MP4, Vimeo, YouTube), PDF, PowerPoint, and Google Slides. Upload once, assign to any team or individual.
+        </div>
+      </div>
+      <div class="faq-item"><button class="w-full flex justify-between items-center py-5 text-left"
+          onclick="toggleFaq(this)"><span class="font-semibold text-gray-900">How does EduFlow compare to LinkedIn
+            Learning?</span><svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 transition-transform" fill="none"
+            stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg></button>
+        <div class="faq-answer text-gray-500 text-sm leading-relaxed">LinkedIn Learning is excellent for individual
+          skill-building. EduFlow is built for companies — with manager dashboards, compliance certification tracking,
+          team-level analytics, custom content, and HRIS integrations that LinkedIn Learning does not offer.</div>
+      </div>
+      <div class="faq-item"><button class="w-full flex justify-between items-center py-5 text-left"
+          onclick="toggleFaq(this)"><span class="font-semibold text-gray-900">What is the pricing for a team of 80
+            people?</span><svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 transition-transform" fill="none"
+            stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg></button>
+        <div class="faq-answer text-gray-500 text-sm leading-relaxed">Teams of 80 users typically start on our Growth
+          plan at $799/month, which includes unlimited learning paths, full analytics, and all integrations. We also
+          offer annual billing with a 20% discount — that brings it to $639/month. Happy to put together a custom quote.
+        </div>
+      </div>
+      <div class="faq-item"><button class="w-full flex justify-between items-center py-5 text-left"
+          onclick="toggleFaq(this)"><span class="font-semibold text-gray-900">Do you integrate with Salesforce or HRIS
+            tools?</span><svg class="faq-icon w-5 h-5 text-gray-400 flex-shrink-0 transition-transform" fill="none"
+            stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg></button>
+        <div class="faq-answer text-gray-500 text-sm leading-relaxed">Yes — we have native integrations with Salesforce,
+          BambooHR, Workday, ADP, and Slack. Full REST API access is available on Growth and Enterprise plans for custom
+          integrations.</div>
+      </div>
+    </div>
+  </section>
 
-<!-- SECTION 9: FINAL CTA -->
-<section class="py-20" style="background:linear-gradient(135deg,#0F6E56 0%,#534AB7 100%)">
-<div class="max-w-3xl mx-auto px-4 text-center">
-<h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Ready to build a culture of learning?</h2>
-<p class="text-lg text-white/80 mb-8">Join 1,200+ companies using EduFlow to develop their teams.</p>
-<a href="#" class="inline-block bg-white font-bold rounded-xl px-9 py-4 text-base" style="color:#1D9E75">Start your free 14-day trial</a>
-<p class="text-white/60 text-xs mt-4">No credit card required · Setup in minutes · Cancel anytime</p>
-</div>
-</section>
+  <!-- SECTION 9: FINAL CTA -->
+  <section class="py-20" style="background:linear-gradient(135deg,#0F6E56 0%,#534AB7 100%)">
+    <div class="max-w-3xl mx-auto px-4 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Ready to build a culture of learning?</h2>
+      <p class="text-lg text-white/80 mb-8">Join 1,200+ companies using EduFlow to develop their teams.</p>
+      <a href="#" class="inline-block bg-white font-bold rounded-xl px-9 py-4 text-base" style="color:#1D9E75">Start
+        your free 14-day trial</a>
+      <p class="text-white/60 text-xs mt-4">No credit card required · Setup in minutes · Cancel anytime</p>
+    </div>
+  </section>
 
-<!-- SECTION 10: FOOTER -->
-<footer style="background:#111827">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-<div class="grid grid-cols-2 md:grid-cols-5 gap-8">
-<div class="col-span-2 md:col-span-1">
-<div class="flex items-center gap-2 mb-3"><div class="w-6 h-6 rounded" style="background:linear-gradient(135deg,#1D9E75,#534AB7)"></div><span class="text-white font-bold">EduFlow</span></div>
-<p class="text-gray-400 text-xs leading-relaxed mb-4">The learning platform built for how modern teams actually work.</p>
-<div class="flex gap-3">
-<svg class="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
-<svg class="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" fill="currentColor" viewBox="0 0 24 24"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/></svg>
-<svg class="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" fill="currentColor" viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg>
-</div>
-</div>
-<div><h4 class="text-white font-semibold text-sm mb-3">Product</h4><ul class="space-y-2 text-sm"><li><a href="#" class="text-gray-400 hover:text-white">Features</a></li><li><a href="#" class="text-gray-400 hover:text-white">Pricing</a></li><li><a href="#" class="text-gray-400 hover:text-white">Integrations</a></li><li><a href="#" class="text-gray-400 hover:text-white">Security</a></li><li><a href="#" class="text-gray-400 hover:text-white">Changelog</a></li></ul></div>
-<div><h4 class="text-white font-semibold text-sm mb-3">Company</h4><ul class="space-y-2 text-sm"><li><a href="#" class="text-gray-400 hover:text-white">About</a></li><li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li><li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li><li><a href="#" class="text-gray-400 hover:text-white">Press</a></li><li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li></ul></div>
-<div><h4 class="text-white font-semibold text-sm mb-3">Resources</h4><ul class="space-y-2 text-sm"><li><a href="#" class="text-gray-400 hover:text-white">Documentation</a></li><li><a href="#" class="text-gray-400 hover:text-white">API Reference</a></li><li><a href="#" class="text-gray-400 hover:text-white">Community</a></li><li><a href="#" class="text-gray-400 hover:text-white">Webinars</a></li><li><a href="#" class="text-gray-400 hover:text-white">Status</a></li></ul></div>
-<div><h4 class="text-white font-semibold text-sm mb-3">Legal</h4><ul class="space-y-2 text-sm"><li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li><li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li><li><a href="#" class="text-gray-400 hover:text-white">Cookie Policy</a></li><li><a href="#" class="text-gray-400 hover:text-white">GDPR</a></li></ul></div>
-</div>
-</div>
-<div class="border-t" style="border-color:#374151">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row justify-between items-center gap-2">
-<span class="text-gray-500 text-xs">© 2025 EduFlow Inc. All rights reserved.</span>
-<span class="text-gray-500 text-xs">Made with ❤️ for modern teams</span>
-</div>
-</div>
-</footer>
+  <!-- SECTION 10: FOOTER -->
+  <footer style="background:#111827">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-8">
+        <div class="col-span-2 md:col-span-1">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-6 h-6 rounded" style="background:linear-gradient(135deg,#1D9E75,#534AB7)"></div><span
+              class="text-white font-bold">EduFlow</span>
+          </div>
+          <p class="text-gray-400 text-xs leading-relaxed mb-4">The learning platform built for how modern teams
+            actually work.</p>
+          <div class="flex gap-3">
+            <svg class="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
+            </svg>
+            <svg class="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z" />
+            </svg>
+            <svg class="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z" />
+            </svg>
+          </div>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold text-sm mb-3">Product</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="text-gray-400 hover:text-white">Features</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Pricing</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Integrations</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Security</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Changelog</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold text-sm mb-3">Company</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="text-gray-400 hover:text-white">About</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Press</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold text-sm mb-3">Resources</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="text-gray-400 hover:text-white">Documentation</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">API Reference</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Community</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Webinars</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Status</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold text-sm mb-3">Legal</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Cookie Policy</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">GDPR</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="border-t" style="border-color:#374151">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row justify-between items-center gap-2">
+        <span class="text-gray-500 text-xs">© 2025 EduFlow Inc. All rights reserved.</span>
+        <span class="text-gray-500 text-xs">Made with ❤️ for modern teams</span>
+      </div>
+    </div>
+  </footer>
 
-<!-- SalesGen Widget SDK — single line integration -->
-<script src="https://salesgen-api.onrender.com/widget/widget.js"
-        data-org="eduflow-eaf7d9"
-        data-api="https://salesgen-api.onrender.com">
-</script>
-
-<!-- FAQ Accordion (part of the main website, not the widget) -->
-<script>
-function toggleFaq(btn) {
-  var item = btn.parentElement;
-  var answer = item.querySelector('.faq-answer');
-  var icon = item.querySelector('.faq-icon');
-  var allItems = document.querySelectorAll('.faq-item');
-  allItems.forEach(function(el) {
-    if (el !== item) {
-      el.querySelector('.faq-answer').classList.remove('open');
-      el.querySelector('.faq-icon').style.transform = 'rotate(0deg)';
+  <!-- SalesGen Widget SDK — single line integration -->
+  <script src="https://salesgen-api.onrender.com/widget/widget.js" data-org="eduflow-8db249"
+    data-api="https://salesgen-api.onrender.com"></script>
+  <!-- FAQ Accordion (part of the main website, not the widget) -->
+  <script>
+    function toggleFaq(btn) {
+      var item = btn.parentElement;
+      var answer = item.querySelector('.faq-answer');
+      var icon = item.querySelector('.faq-icon');
+      var allItems = document.querySelectorAll('.faq-item');
+      allItems.forEach(function (el) {
+        if (el !== item) {
+          el.querySelector('.faq-answer').classList.remove('open');
+          el.querySelector('.faq-icon').style.transform = 'rotate(0deg)';
+        }
+      });
+      answer.classList.toggle('open');
+      icon.style.transform = answer.classList.contains('open') ? 'rotate(45deg)' : 'rotate(0deg)';
     }
-  });
-  answer.classList.toggle('open');
-  icon.style.transform = answer.classList.contains('open') ? 'rotate(45deg)' : 'rotate(0deg)';
-}
-</script>
+  </script>
 
 </body>
-</html>
 
+</html>
