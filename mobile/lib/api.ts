@@ -5,7 +5,7 @@
 
 import axios from "axios";
 import { useAuthStore } from "@/store/authStore";
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://10.237.216.207:8000";
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://salesgen-api.onrender.com";
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
