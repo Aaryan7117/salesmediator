@@ -3,24 +3,46 @@ import { useAuth, API_URL } from '../App'
 
 export default function KnowledgeBase() {
   const { auth } = useAuth()
+  
+  // Doc Uploads
   const [docs, setDocs] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loadingDocs, setLoadingDocs] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [dragOver, setDragOver] = useState(false)
-  const [testQuery, setTestQuery] = useState('')
-  const [testResult, setTestResult] = useState<any>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => { fetchDocs() }, [])
+  // Structured Resources
+  const [resources, setResources] = useState<any[]>([])
+  const [loadingRes, setLoadingRes] = useState(true)
+  const [isAddingRes, setIsAddingRes] = useState(false)
+  const [resForm, setResForm] = useState({ title: '', url: '', type: 'doc', description: '' })
+
+  const [testQuery, setTestQuery] = useState('')
+  const [testResult, setTestResult] = useState<any>(null)
+
+  useEffect(() => { 
+    fetchDocs()
+    fetchResources()
+  }, [])
 
   const fetchDocs = async () => {
     try {
-      const res = await fetch(`${API_URL}/kb/`, {
+      const res = await fetch(`${API_URL}/kb/documents`, {
         headers: { Authorization: `Bearer ${auth.token}` },
       })
       if (res.ok) setDocs(await res.json())
     } catch (err) { console.error(err) }
-    finally { setLoading(false) }
+    finally { setLoadingDocs(false) }
+  }
+
+  const fetchResources = async () => {
+    try {
+      const res = await fetch(`${API_URL}/kb/resources`, {
+        headers: { Authorization: `Bearer ${auth.token}` },
+      })
+      if (res.ok) setResources(await res.json())
+    } catch (err) { console.error(err) }
+    finally { setLoadingRes(false) }
   }
 
   const handleUpload = async (file: File) => {
@@ -45,9 +67,9 @@ export default function KnowledgeBase() {
     if (file) handleUpload(file)
   }
 
-  const handleDelete = async (docId: string) => {
+  const handleDeleteDoc = async (docId: string) => {
     try {
-      await fetch(`${API_URL}/kb/${docId}`, {
+      await fetch(`${API_URL}/kb/documents/${docId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${auth.token}` },
       })
@@ -55,140 +77,174 @@ export default function KnowledgeBase() {
     } catch (err) { console.error(err) }
   }
 
+  const handleAddResource = async () => {
+    try {
+      const res = await fetch(`${API_URL}/kb/resources`, {
+        method: 'POST',
+        headers: { 
+            Authorization: `Bearer ${auth.token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(resForm)
+      })
+      if (res.ok) {
+        setIsAddingRes(false)
+        setResForm({ title: '', url: '', type: 'doc', description: '' })
+        fetchResources()
+      }
+    } catch (err) { console.error(err) }
+  }
+
+  const handleDeleteResource = async (resId: string) => {
+    try {
+      await fetch(`${API_URL}/kb/resources/${resId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${auth.token}` },
+      })
+      fetchResources()
+    } catch (err) { console.error(err) }
+  }
+
   return (
     <div>
       <div className="page-header">
         <h1 className="page-title">Knowledge Base</h1>
-        <p className="page-subtitle">Upload product documents — your AI agent learns from these</p>
+        <p className="page-subtitle">Manage learning material and structured resources for your AI agent</p>
       </div>
 
-      {/* Upload Zone */}
-      <div
-        className="card"
-        style={{
-          textAlign: 'center',
-          padding: 48,
-          marginBottom: 24,
-          border: dragOver ? '2px dashed var(--accent-primary)' : '1px solid var(--border-subtle)',
-          background: dragOver ? 'rgba(99,102,241,0.06)' : 'var(--bg-card)',
-          cursor: 'pointer',
-          transition: 'all 0.2s',
-        }}
-        onDragOver={e => { e.preventDefault(); setDragOver(true) }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".pdf,.csv"
-          hidden
-          onChange={e => e.target.files?.[0] && handleUpload(e.target.files[0])}
-        />
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="1.5" style={{ marginBottom: 16, opacity: 0.6 }}>
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
-          {uploading ? 'Uploading...' : 'Drop files here or click to upload'}
-        </div>
-        <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-          Supports PDF and CSV files. Your AI agent will learn from this content.
-        </div>
-      </div>
-
-      {/* Documents List */}
-      <div className="card" style={{ marginBottom: 24 }}>
-        <div className="card-header">
-          <div className="card-title">Uploaded Documents ({docs.length})</div>
-        </div>
-
-        {loading ? (
-          <div className="empty-state" style={{ padding: 32 }}><p>Loading...</p></div>
-        ) : docs.length === 0 ? (
-          <div className="empty-state">
-            <h3>No documents yet</h3>
-            <p>Upload your product documentation to teach your AI agent about your product.</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {docs.map((doc: any) => (
-              <div key={doc.id} style={{
-                display: 'flex', alignItems: 'center', gap: 16, padding: 14,
-                borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)',
-                background: 'rgba(17,24,39,0.3)',
-              }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: 'var(--radius-sm)',
-                  background: doc.file_type === 'pdf' ? 'var(--accent-red-bg)' : 'var(--accent-green-bg)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 11, fontWeight: 700,
-                  color: doc.file_type === 'pdf' ? 'var(--accent-red)' : 'var(--accent-green)',
-                }}>
-                  {doc.file_type?.toUpperCase()}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{doc.filename}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    {doc.chunk_count} chunks · Uploaded {doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : 'recently'}
-                  </div>
-                </div>
-                <button
-                  className="btn btn-sm btn-ghost"
-                  onClick={() => handleDelete(doc.id)}
-                  style={{ color: 'var(--accent-red)' }}
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Test KB */}
-      <div className="card">
-        <div className="card-header">
-          <div>
-            <div className="card-title">Test Your KB</div>
-            <div className="card-subtitle">Ask a question to see what your AI would retrieve</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <input
-            className="form-input"
-            placeholder="e.g. What does your product cost?"
-            value={testQuery}
-            onChange={e => setTestQuery(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && testQuery && setTestResult({
-              title: 'Search result will show here',
-              excerpt: 'This feature connects to the /chat endpoint to test KB retrieval.',
-              relevance_score: 0,
-            })}
-          />
-          <button className="btn btn-primary" onClick={() => testQuery && setTestResult({
-            title: 'KB Test',
-            excerpt: 'Connect this to the backend KB test endpoint for live results.',
-            relevance_score: 85,
-          })}>
-            Test
-          </button>
-        </div>
-        {testResult && (
-          <div style={{
-            marginTop: 16, padding: 16, borderRadius: 'var(--radius-md)',
-            background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)',
-          }}>
-            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{testResult.title}</div>
-            <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{testResult.excerpt}</div>
-            <div style={{ fontSize: 12, color: 'var(--accent-primary)', marginTop: 8 }}>
-              Relevance: {testResult.relevance_score}%
+      <div className="grid-2">
+        {/* Left Column: Documents for RAG */}
+        <div>
+          <h2 style={{ fontSize: 18, marginBottom: 16 }}>Unstructured Uploads</h2>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>Upload product documentation. Your agent will pull quotes from here during chats.</p>
+          
+          <div
+            className="card"
+            style={{
+              textAlign: 'center',
+              padding: 32,
+              marginBottom: 16,
+              border: dragOver ? '2px dashed var(--accent-primary)' : '1px solid var(--border-subtle)',
+              background: dragOver ? 'rgba(99,102,241,0.06)' : 'var(--bg-card)',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.csv"
+              hidden
+              onChange={e => e.target.files?.[0] && handleUpload(e.target.files[0])}
+            />
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+              {uploading ? 'Uploading...' : 'Drop PDF or CSV files here'}
             </div>
           </div>
-        )}
+
+          <div className="card" style={{ padding: 0 }}>
+            {loadingDocs ? (
+              <div className="empty-state" style={{ padding: 32 }}><p>Loading...</p></div>
+            ) : docs.length === 0 ? (
+              <div className="empty-state" style={{ padding: 24 }}>
+                <p>No documents uploaded</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {docs.map((doc: any) => (
+                  <div key={doc.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 12, padding: 16,
+                    borderBottom: '1px solid var(--border-subtle)',
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{doc.filename}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{doc.chunk_count} chunks</div>
+                    </div>
+                    <button
+                      className="btn btn-sm btn-ghost"
+                      onClick={() => handleDeleteDoc(doc.id)}
+                      style={{ color: 'var(--accent-red)' }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Structured Resources */}
+        <div>
+          <h2 style={{ fontSize: 18, marginBottom: 16 }}>Structured Resources</h2>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>Links to specs, videos, or guides. Your agent sends these to unqualified buyers.</p>
+          
+          <div className="card" style={{ padding: 0 }}>
+            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="card-title">Saved Resources</div>
+                <button className="btn btn-sm btn-primary" onClick={() => setIsAddingRes(!isAddingRes)}>
+                  {isAddingRes ? 'Cancel' : '+ Add Resource'}
+                </button>
+            </div>
+
+            {isAddingRes && (
+              <div style={{ padding: 16, background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border-subtle)' }}>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                  <input className="form-input" placeholder="Title" value={resForm.title} onChange={e => setResForm({...resForm, title: e.target.value})} />
+                  <select className="form-input" style={{ width: 120 }} value={resForm.type} onChange={e => setResForm({...resForm, type: e.target.value})}>
+                    <option value="doc">Doc</option>
+                    <option value="video">Video</option>
+                    <option value="spec">Spec</option>
+                    <option value="guide">Guide</option>
+                  </select>
+                </div>
+                <input className="form-input" placeholder="URL" style={{ marginBottom: 12 }} value={resForm.url} onChange={e => setResForm({...resForm, url: e.target.value})} />
+                <textarea className="form-input" placeholder="Description (optional)" style={{ marginBottom: 12 }} value={resForm.description} onChange={e => setResForm({...resForm, description: e.target.value})} />
+                <button className="btn btn-primary btn-sm" disabled={!resForm.title || !resForm.url} onClick={handleAddResource}>Save Resource</button>
+              </div>
+            )}
+
+            {loadingRes ? (
+              <div className="empty-state" style={{ padding: 32 }}><p>Loading...</p></div>
+            ) : resources.length === 0 ? (
+              <div className="empty-state" style={{ padding: 24 }}>
+                <p>No structured resources yet</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {resources.map((res: any) => (
+                  <div key={res.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 12, padding: 16,
+                    borderBottom: '1px solid var(--border-subtle)',
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', display: 'flex', gap: 8, alignItems: 'center' }}>
+                         <span style={{ fontSize: 10, padding: '2px 6px', background: 'var(--border-subtle)', borderRadius: 4, textTransform: 'uppercase' }}>{res.type}</span>
+                         {res.title}
+                      </div>
+                      <a href={res.url} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: 'var(--accent-primary)', display: 'block', marginTop: 4 }}>
+                        {res.url}
+                      </a>
+                    </div>
+                    <button
+                      className="btn btn-sm btn-ghost"
+                      onClick={() => handleDeleteResource(res.id)}
+                      style={{ color: 'var(--accent-red)' }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+    
     </div>
   )
 }

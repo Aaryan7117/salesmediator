@@ -5,9 +5,8 @@ interface LiveLead {
   id: string
   session_id: string
   persona: string | null
-  intent_score: number
-  intent_state: string
-  signals: string[]
+  qualification_checklist: Record<string, any>
+  qualification_status: string
   calendly_shown: boolean
   updated_at: string | null
 }
@@ -22,11 +21,8 @@ export default function LiveMonitor() {
   const [takingOver, setTakingOver] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
-  // SSE Connection
   useEffect(() => {
-    // EventSource doesn't support custom headers, so we'll use fetch-based SSE
     let aborted = false
-
     async function connectSSE() {
       try {
         const res = await fetch(`${API_URL}/live/stream`, {
@@ -54,28 +50,23 @@ export default function LiveMonitor() {
                 try {
                   const leads = JSON.parse(data)
                   setSessions(leads)
-                } catch (e) { /* heartbeat or parse error */ }
+                } catch (e) { }
               }
             }
           }
         }
       } catch (err) {
-        console.error('SSE connection error:', err)
         setConnected(false)
-        // Retry after 5 seconds
         if (!aborted) setTimeout(connectSSE, 5000)
       }
     }
-
     connectSSE()
-
     return () => {
       aborted = true
       setConnected(false)
     }
   }, [auth.token])
 
-  // Fetch selected lead detail
   useEffect(() => {
     if (!selected) return
     fetchDetail(selected)
@@ -83,7 +74,6 @@ export default function LiveMonitor() {
     return () => clearInterval(interval)
   }, [selected])
 
-  // Auto-scroll chat
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [selectedDetail])
@@ -117,11 +107,11 @@ export default function LiveMonitor() {
     finally { setTakingOver(false) }
   }
 
-  const getScoreColor = (s: number) =>
-    s >= 76 ? 'var(--accent-green)' : s >= 41 ? 'var(--accent-yellow)' : 'var(--text-muted)'
-
   const stateEmoji = (s: string) =>
-    s === 'Decision-Ready' ? '🔥' : s === 'Comparing' ? '⚡' : '🔵'
+    s === 'qualified' ? '🟢' : s === 'unqualified' ? '🔴' : '🟡'
+    
+  const getStatusColor = (s: string) =>
+    s === 'qualified' ? 'var(--accent-green)' : s === 'unqualified' ? 'var(--accent-red)' : 'var(--accent-yellow)'
 
   const timeSince = (dateStr: string | null) => {
     if (!dateStr) return ''
@@ -132,12 +122,18 @@ export default function LiveMonitor() {
     return `${Math.floor(mins / 60)}h ago`
   }
 
+  const getChecklistCount = (cl: any = {}) => {
+    const total = Object.keys(cl).length || 6
+    const checked = Object.values(cl).filter(v => v !== null && v !== undefined).length
+    return `${checked}/${total}`
+  }
+
   return (
     <div>
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="page-title">Live Monitor</h1>
-          <p className="page-subtitle">Watch your AI agent think in real-time</p>
+          <p className="page-subtitle">Watch your agent gather qualification data in real-time</p>
         </div>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8, fontSize: 13,
@@ -181,27 +177,20 @@ export default function LiveMonitor() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {stateEmoji(s.intent_state)} {s.persona || 'New Visitor'}
+                    {stateEmoji(s.qualification_status)} {s.persona || 'New Visitor'}
                   </span>
-                  <span style={{ fontSize: 18, fontWeight: 700, color: getScoreColor(s.intent_score) }}>
-                    {s.intent_score}
+                  <span style={{ fontSize: 14, fontWeight: 700, color: getStatusColor(s.qualification_status) }}>
+                    {getChecklistCount(s.qualification_checklist)}
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    {s.intent_state}
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'capitalize' }}>
+                    {s.qualification_status}
                   </span>
                   <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                     {timeSince(s.updated_at)}
                   </span>
                 </div>
-                {s.signals.length > 0 && (
-                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
-                    {s.signals.slice(-2).map(sig => (
-                      <span key={sig} className="signal-pill">{sig}</span>
-                    ))}
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -215,18 +204,18 @@ export default function LiveMonitor() {
               display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12,
               padding: '0 0 16px', borderBottom: '1px solid var(--border-subtle)', marginBottom: 16,
             }}>
-              {/* Score */}
+              {/* Progress */}
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Score</div>
-                <div style={{ fontSize: 28, fontWeight: 800, color: getScoreColor(selectedDetail.intent_score) }}>
-                  {selectedDetail.intent_score}
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Progress</div>
+                <div style={{ fontSize: 28, fontWeight: 800, color: getStatusColor(selectedDetail.qualification_status) }}>
+                  {getChecklistCount(selectedDetail.qualification_checklist)}
                 </div>
               </div>
               {/* State */}
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>State</div>
-                <div className={`intent-badge intent-${selectedDetail.intent_state?.toLowerCase().replace('-', '')}`} style={{ fontSize: 13 }}>
-                  {selectedDetail.intent_state}
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Status</div>
+                <div style={{ fontSize: 13, fontWeight: 600, textTransform: 'capitalize', color: getStatusColor(selectedDetail.qualification_status) }}>
+                  {selectedDetail.qualification_status}
                 </div>
               </div>
               {/* Persona */}
@@ -248,15 +237,23 @@ export default function LiveMonitor() {
               </div>
             </div>
 
-            {/* Signals */}
-            {selectedDetail.signals?.length > 0 && (
+            {/* Checklist items */}
+            {selectedDetail.qualification_checklist && (
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
-                  Detected Signals
+                  Qualification Checklist
                 </div>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  {selectedDetail.signals.map((sig: string) => (
-                    <span key={sig} className="signal-pill">{sig}</span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  {Object.entries(selectedDetail.qualification_checklist).map(([key, val]: any) => (
+                    <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                      <span style={{ color: val !== null ? 'var(--accent-green)' : 'var(--text-muted)' }}>
+                         {val !== null ? '✅' : '❌'}
+                      </span>
+                      <span style={{ color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
+                        {key.replace('_', ' ')}:
+                      </span>
+                      <span style={{ fontWeight: 600 }}>{val !== null ? String(val) : '—'}</span>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -264,7 +261,7 @@ export default function LiveMonitor() {
 
             {/* Chat Transcript */}
             <div style={{
-              flex: 1, overflowY: 'auto', padding: '12px 0',
+              flex: 1, overflowY: 'auto', padding: '12px 0', borderTop: '1px solid var(--border-subtle)',
               display: 'flex', flexDirection: 'column', gap: 8,
               maxHeight: 280,
             }}>
@@ -337,17 +334,6 @@ export default function LiveMonitor() {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.3; }
         }
-        .signal-pill {
-          display: inline-block; padding: 3px 10px; border-radius: 10px;
-          font-size: 11px; font-weight: 600;
-          background: rgba(99,102,241,0.1); color: var(--accent-primary);
-        }
-        .intent-badge {
-          display: inline-block; padding: 4px 12px; border-radius: 10px; font-weight: 600;
-        }
-        .intent-exploring { background: rgba(100,116,139,0.1); color: var(--text-muted); }
-        .intent-comparing { background: rgba(234,179,8,0.1); color: var(--accent-yellow); }
-        .intent-decisionready { background: rgba(16,185,129,0.1); color: var(--accent-green); }
       `}</style>
     </div>
   )

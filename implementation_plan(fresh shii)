@@ -1,0 +1,347 @@
+# SalesGen Pivot: Intent Scoring → Explicit Criteria Qualification (v2)
+
+> [!IMPORTANT]
+> **v2 updates**: Fixed two critical gaps — (1) qualification criteria are now **org-configurable** not hardcoded, (2) KB now stores **structured resources with URLs/types** for "product spec links and platform videos"
+
+## What Changed (Before vs Now)
+
+```mermaid
+graph LR
+    subgraph BEFORE["❌ BEFORE — Intent Reconstruction"]
+        A1[Visitor message] --> A2[Regex + LLM scores 0-100]
+        A2 --> A4{Score > 71?}
+        A4 -->|Yes| A5[Show Calendly + Slack alert]
+        A4 -->|No| A6[Keep chatting]
+    end
+
+    subgraph NOW["✅ NOW — Explicit Criteria Verification"]
+        B1[Visitor message] --> B2[LLM extracts structured fields]
+        B2 --> B3["Check against org's criteria"]
+        B3 --> B4{All criteria met?}
+        B4 -->|Qualified| B5["Draft email (EmailJS) + Schedule (Calendly)"]
+        B4 -->|Unqualified| B6["Serve 2-5 KB resources (specs + videos with URLs)"]
+        B4 -->|Collecting| B7[Ask for next missing field naturally]
+    end
+```
+
+### Side-by-Side Comparison
+
+| Aspect | ❌ Before (Intent) | ✅ Now (Qualification) |
+|--------|-------------------|----------------------|
+| **What AI detects** | Psychological buying signals | Structured data fields (Name, Company, Role, etc.) |
+| **How it scores** | Numeric 0–100 intent score | Boolean checklist (each field ✅ or ❌) |
+| **Decision logic** | `score > 71` triggers action | Org-defined criteria all satisfied → Qualified |
+| **Criteria** | Hardcoded signal weights | **Configurable per org** (each org sets their own) |
+| **Qualified action** | Show Calendly link | **Draft email via EmailJS** + **Schedule via Calendly** |
+| **Unqualified action** | Nothing specific | Serve 2-5 **product spec links & videos** from KB |
+| **KB format** | Raw text chunks | **Structured resources with URLs, types, titles** |
+| **What AI asks** | Whatever feels right | Specifically targets missing fields, one per turn |
+| **Lead log** | `signals: ["Pricing probe"]` | `checklist: {name: "Sarah", company: "Acme", ...}` |
+
+---
+
+## The Qualification System (Org-Configurable)
+
+> [!IMPORTANT]
+> The problem statement says `Company size > 50` and `Timeline < 3 months` are **"Examples only"**. So the criteria MUST be configurable per organization, not hardcoded.
+
+### How It Works
+
+Each org defines their own qualification criteria in the dashboard:
+
+```
+┌─ Org: "NovaCRM" ──────────────────────────────────────┐
+│                                                        │
+│  Required Fields:  name, company, role, use_case       │
+│                                                        │
+│  Conditions:                                           │
+│    • company_size  >=  50                               │
+│    • timeline      <=  "3 months"                       │
+│                                                        │
+│  [Save Criteria]                                        │
+└────────────────────────────────────────────────────────┘
+```
+
+A different org could set completely different criteria:
+
+```
+┌─ Org: "DevToolsCo" ───────────────────────────────────┐
+│                                                        │
+│  Required Fields:  name, company, role, tech_stack      │
+│                                                        │
+│  Conditions:                                           │
+│    • company_size  >=  10                               │
+│    • budget        >=  "$5000"                          │
+│                                                        │
+└────────────────────────────────────────────────────────┘
+```
+
+### New Supabase Table: `qualification_criteria`
+
+| Column | Type | Example |
+|--------|------|---------|
+| `id` | UUID | auto |
+| `org_id` | UUID (FK → orgs) | "abc-123" |
+| `required_fields` | JSONB | `["name", "company", "role", "use_case"]` |
+| `conditions` | JSONB | `[{"field": "company_size", "op": ">=", "value": 50}, {"field": "timeline", "op": "<=", "value": "3 months"}]` |
+| `created_at` | timestamp | auto |
+
+**Default criteria** (used if org hasn't configured custom ones):
+- Required: name, company, role, use_case
+- Conditions: company_size >= 50, timeline <= 3 months
+
+---
+
+## KB Resources (Structured — Not Just Text)
+
+> [!WARNING]
+> The problem statement says: **"Recommend 2–5 specific product spec links and platform videos strictly from the controlled source."**
+> Our current KB stores only raw text chunks. We need structured resource records.
+
+### New Supabase Table: `kb_resources`
+
+| Column | Type | Example |
+|--------|------|---------|
+| `id` | UUID | auto |
+| `org_id` | UUID (FK → orgs) | "abc-123" |
+| `title` | text | "SalesGen Intent Scoring — Product Spec" |
+| `url` | text | "https://docs.salesgen.ai/intent-scoring" |
+| `type` | text | `"spec"` / `"video"` / `"doc"` / `"guide"` |
+| `description` | text | "Detailed spec of the real-time intent scoring pipeline" |
+| `tags` | JSONB | `["intent", "scoring", "pipeline"]` |
+| `created_at` | timestamp | auto |
+
+### How Resources Get Used
+
+```
+When lead is UNQUALIFIED:
+    → Query kb_resources by org_id + relevance to conversation
+    → Return 2-5 structured results:
+      { title, url, type, description }
+    → AI says: "Here are some resources that might help:
+       📄 SalesGen Intent Scoring Spec — docs.salesgen.ai/intent-scoring
+       🎥 Platform Demo Video — youtube.com/watch?v=xyz
+       📄 Integration Guide — docs.salesgen.ai/integrations"
+```
+
+### Dashboard: Resource Management Page
+
+Orgs can add/remove their resources from the dashboard:
+
+```
+┌─ Knowledge Resources ──────────────────────────────────┐
+│                                                         │
+│  📄 Product Spec Sheet     https://docs.example.com/... │
+│  🎥 Platform Demo Video   https://youtube.com/watch?... │
+│  📄 Integration Guide      https://docs.example.com/... │
+│  🎥 Customer Case Study   https://youtube.com/watch?... │
+│                                                         │
+│  [+ Add Resource]                                       │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Tool Integrations
+
+### 📧 EmailJS (Free Tier — 200 emails/month)
+- When lead is **Qualified**, LLM drafts a personalized confirmation email
+- Email content uses extracted checklist data
+- Template variables: `{{to_name}}`, `{{company}}`, `{{role}}`, `{{use_case}}`, `{{meeting_link}}`
+- Fires client-side from widget — no backend email server
+
+### 📅 Calendly (Free Tier — Unlimited meetings)
+- Already integrated in our codebase (`calendly_link` stored in integrations table)
+- **Change**: Trigger on `qualification_status == "qualified"` instead of `score > 71`
+- Embed Calendly inline in the widget when qualified
+
+---
+
+## File Changes (Complete)
+
+### Backend — New Files
+
+---
+
+#### [NEW] [qualification.py](file:///e:/agent%20sales%20guy/backend/services/qualification.py)
+> **The core brain swap**
+
+- Loads org's `qualification_criteria` from Supabase
+- LLM extracts structured fields from each message
+- Regex pre-pass for obvious patterns (numbers, roles, company names)
+- Evaluates conditions dynamically (supports `>=`, `<=`, `==`, `contains`)
+- Returns `(updated_checklist, qualification_status)`
+
+---
+
+#### [NEW] [tools.py](file:///e:/agent%20sales%20guy/backend/services/tools.py)
+> **Email drafting + meeting proposal**
+
+- `draft_confirmation_email()` — LLM generates personalized email body from checklist
+- `generate_meeting_proposal()` — formats Calendly link with context
+- Returns content that gets embedded in AI reply + sent via EmailJS
+
+---
+
+### Backend — Modified Files
+
+---
+
+#### [MODIFY] [chat.py](file:///e:/agent%20sales%20guy/backend/routes/chat.py)
+> **Pipeline rewire**
+
+| Step | Before | After |
+|------|--------|-------|
+| 3-4 | `score_intent()` + `llm_intent_analysis()` | `extract_qualification()` with org criteria |
+| 8 | Intent-state prompt | **Qualification-aware prompt** (knows missing fields) |
+| 9 | Calendly gate: `score > threshold` | Criteria gate: `status == "qualified"` → trigger tools |
+| 10 | Fire Slack on score > 71 | Fire on status → `qualified` |
+| 12 | Store `intent_score`, `signals` | Store `qualification_checklist`, `qualification_status` |
+| 13 | Return score | Return checklist + status + drafted_email + resources |
+
+---
+
+#### [MODIFY] [llm.py](file:///e:/agent%20sales%20guy/backend/services/llm.py)
+> **New Sales Intake Agent prompt**
+
+- Knows which fields are collected, which are missing
+- Asks for ONE missing field per turn (conversational, not form-like)
+- When **qualified**: "I'll send confirmation details and let's schedule a meeting"
+- When **unqualified**: gracefully shares KB resources with specific links
+- Strictly uses KB — never makes up product facts
+
+---
+
+#### [MODIFY] [schemas.py](file:///e:/agent%20sales%20guy/backend/models/schemas.py)
+> **New response models**
+
+```python
+class QualificationChecklist(BaseModel):
+    name: str | None = None
+    company: str | None = None  
+    role: str | None = None
+    use_case: str | None = None
+    company_size: int | None = None
+    timeline: str | None = None
+
+class KBResource(BaseModel):
+    title: str
+    url: str
+    type: str  # "spec" | "video" | "doc" | "guide"
+    description: str
+
+class ChatMessageResponse(BaseModel):
+    reply: str
+    session_id: str
+    qualification_status: str          # "collecting" | "qualified" | "unqualified"
+    qualification_checklist: QualificationChecklist | None = None
+    drafted_email: str | None = None   # When qualified
+    meeting_link: str | None = None    # When qualified
+    resources: list[KBResource] = []   # When unqualified (2-5 items)
+    intent_score: int = 0              # Backward compat
+    persona: str | None = None
+```
+
+---
+
+#### [MODIFY] [kb_retrieval.py](file:///e:/agent%20sales%20guy/backend/services/kb_retrieval.py)
+> **Now also queries `kb_resources` table for structured results with URLs**
+
+- Text KB (ChromaDB): still used for answering product questions
+- Resource KB (Supabase `kb_resources`): used for recommending links/videos to unqualified leads
+
+---
+
+### Frontend — Modified Files
+
+---
+
+#### [MODIFY] [LiveMonitor.tsx](file:///e:/agent%20sales%20guy/web-dashboard/src/pages/LiveMonitor.tsx)
+- Intent gauge → **Qualification Checklist Card** (✅/❌ per field)
+- Status badge: 🟡 Collecting → 🟢 Qualified → 🔴 Unqualified
+- Email preview panel when qualified
+
+#### [MODIFY] [Leads.tsx](file:///e:/agent%20sales%20guy/web-dashboard/src/pages/Leads.tsx) + [LeadDetail.tsx](file:///e:/agent%20sales%20guy/web-dashboard/src/pages/LeadDetail.tsx)
+- Score column → Status badge + checklist progress (e.g., "4/6 fields")
+
+#### [NEW] KB Resources management page (or add to existing KnowledgeBase page)
+- CRUD for structured resources (title, URL, type, description)
+- Admins add their spec links, video URLs, doc links here
+
+---
+
+## What Does NOT Change
+- ✅ Widget embed system
+- ✅ Landing page  
+- ✅ Authentication (signup/login/teams)
+- ✅ Session management + rate limiting
+- ✅ Conversation memory service
+- ✅ Mobile app (reads leads from API)
+- ✅ Supabase core schema (JSONB columns are flexible)
+- ✅ Integrations page (Calendly link already stored here)
+
+---
+
+## Demo Scripts
+
+### Path 1: Qualified Lead ✅
+```
+Visitor: "Hi, I'm interested in your product"
+    → AI: "Welcome! I'd love to help. Could I get your name to start?"
+    → Checklist: 0/6
+
+Visitor: "I'm Sarah, VP of Sales at Acme Corp"  
+    → Extracts: name=Sarah, company=Acme Corp, role=VP of Sales
+    → Checklist: 3/6 ✅✅✅
+
+Visitor: "We need a tool to qualify inbound leads automatically"
+    → Extracts: use_case="inbound lead qualification"
+    → Checklist: 4/6 ✅✅✅✅
+
+Visitor: "We have about 200 sales reps"
+    → Extracts: company_size=200 → checks org criteria (>=50 ✅)
+    → Checklist: 5/6
+
+Visitor: "Need this live before end of Q2"
+    → Extracts: timeline="~2 months" → checks org criteria (<=3mo ✅)  
+    → Checklist: 6/6 → STATUS: QUALIFIED 🟢
+    → 📧 EmailJS fires confirmation email to Sarah
+    → 📅 Calendly link shown: "Let's schedule a 30-min demo!"
+```
+
+### Path 2: Unqualified → KB Resources
+```
+Visitor: "Hey, I'm a freelance consultant"
+    → Extracts: role=consultant
+
+Visitor: "Just me, solo operation"  
+    → Extracts: company_size=1 → checks org criteria (>=50 ❌)
+    → STATUS: UNQUALIFIED 🔴
+    → AI: "Thanks for your interest! Here are some resources:
+       📄 SalesGen Product Spec — salesgen.ai/docs/spec
+       🎥 Platform Overview Video — youtube.com/watch?v=abc
+       📄 Quick Start Guide — salesgen.ai/docs/quickstart"
+```
+
+---
+
+## Execution Order
+
+| # | Task | Time | Priority |
+|---|------|------|----------|
+| 1 | `qualification.py` — extraction engine | 30 min | 🔴 Critical |
+| 2 | `tools.py` — email draft + meeting | 15 min | 🔴 Critical |
+| 3 | `schemas.py` — new models | 10 min | 🔴 Critical |
+| 4 | `chat.py` — rewire pipeline | 30 min | 🔴 Critical |
+| 5 | `llm.py` — new system prompt | 15 min | 🔴 Critical |
+| 6 | Supabase tables — `qualification_criteria` + `kb_resources` | 10 min | 🔴 Critical |
+| 7 | `kb_retrieval.py` — multi-result + resource query | 15 min | 🟡 Important |
+| 8 | Dashboard UI — checklist + resources page | 30 min | 🟡 Important |
+| 9 | Test + Deploy to Render + Vercel | 15 min | 🟡 Important |
+
+## Your Parallel Tasks (While I Code)
+
+1. ✅ **Calendly** — Create free account → 1 event type ("SalesGen Demo - 30min") → Copy link
+2. ✅ **EmailJS** — Create free account → Connect Gmail → Create template with vars
+3. ✅ **Supabase** — Create `qualification_criteria` and `kb_resources` tables (or I can give you the SQL)
+4. ✅ **Add sample KB resources** — 3-5 product spec links + video URLs for your demo org

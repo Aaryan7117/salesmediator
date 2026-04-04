@@ -15,13 +15,19 @@ from pydantic import BaseModel, Field, field_validator
 # ---------------------------------------------------------------------------
 # Qualification Data
 # ---------------------------------------------------------------------------
-class QualificationData(BaseModel):
+class QualificationChecklist(BaseModel):
     name: str | None = None
     company: str | None = None
     role: str | None = None
     use_case: str | None = None
     company_size: int | None = None
-    timeline_months: int | None = None
+    timeline: str | None = None
+
+class KBResource(BaseModel):
+    title: str
+    url: str
+    type: str
+    description: str
 
 
 # ---------------------------------------------------------------------------
@@ -126,14 +132,13 @@ class ResourceServed(BaseModel):
 class ChatMessageResponse(BaseModel):
     reply: str
     session_id: str
-    intent_score: int
-    intent_state: str
+    qualification_status: str
+    qualification_checklist: QualificationChecklist | None = None
+    drafted_email: str | None = None
+    meeting_link: str | None = None
+    resources: list[KBResource] = []
+    intent_score: int = 0
     persona: str | None = None
-    resource: ResourceServed | None = None
-    show_calendly: bool = False
-    calendly_link: str | None = None
-    qualification_data: QualificationData | None = None
-    is_qualified: bool | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -160,8 +165,9 @@ class LeadResponse(BaseModel):
     calendly_shown: bool = False
     created_at: datetime | None = None
     updated_at: datetime | None = None
-    qualification_data: QualificationData | None = None
-    is_qualified: bool | None = None
+    updated_at: datetime | None = None
+    qualification_checklist: QualificationChecklist | None = None
+    qualification_status: str = "collecting"
 
 
 class LeadListItem(BaseModel):
@@ -172,8 +178,8 @@ class LeadListItem(BaseModel):
     intent_state: str = "Exploring"
     signals: list[str] = []
     updated_at: datetime | None = None
-    qualification_data: QualificationData | None = None
-    is_qualified: bool | None = None
+    qualification_checklist: QualificationChecklist | None = None
+    qualification_status: str = "collecting"
 
 
 # ---------------------------------------------------------------------------

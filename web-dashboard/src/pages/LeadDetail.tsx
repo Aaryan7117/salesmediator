@@ -27,14 +27,28 @@ export default function LeadDetail() {
 
   const getStateColor = (state: string) => {
     switch(state) {
-      case 'Decision-Ready': return 'var(--accent-green)'
-      case 'Comparing': return 'var(--accent-yellow)'
-      default: return 'var(--accent-blue)'
+      case 'qualified': return 'var(--accent-green)'
+      case 'unqualified': return 'var(--accent-red)'
+      default: return 'var(--accent-yellow)'
     }
+  }
+
+  const getChecklistCount = (cl: any = {}) => {
+    const total = Object.keys(cl).length || 6;
+    const checked = Object.values(cl).filter(v => v !== null && v !== undefined).length;
+    return `${checked}/${total}`
+  }
+
+  const getChecklistPercent = (cl: any = {}) => {
+    const total = Object.keys(cl).length || 6;
+    const checked = Object.values(cl).filter(v => v !== null && v !== undefined).length;
+    return Math.floor((checked / total) * 100);
   }
 
   if (loading) return <div className="empty-state"><p>Loading lead...</p></div>
   if (!lead) return <div className="empty-state"><h3>Lead not found</h3></div>
+
+  const status = lead.qualification_status || 'collecting'
 
   return (
     <div>
@@ -51,23 +65,24 @@ export default function LeadDetail() {
       </div>
 
       <div className="grid-2" style={{ marginBottom: 24 }}>
-        {/* Score Card */}
+        {/* Progress Card */}
         <div className="card" style={{ textAlign: 'center', padding: 32 }}>
-          <div style={{ fontSize: 64, fontWeight: 800, color: getStateColor(lead.intent_state), lineHeight: 1 }}>
-            {lead.intent_score}
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
+            Checklist Progress
           </div>
-          <div className="intent-gauge" style={{ maxWidth: 200, margin: '16px auto' }}>
-            <div className="intent-gauge-fill" style={{
-              width: `${lead.intent_score}%`,
-              background: getStateColor(lead.intent_state),
+          <div style={{ fontSize: 64, fontWeight: 800, color: getStateColor(status), lineHeight: 1 }}>
+            {getChecklistCount(lead.qualification_checklist)}
+          </div>
+          <div className="intent-gauge" style={{ maxWidth: 200, margin: '16px auto', borderRadius: 6, background: 'var(--border-subtle)', height: 8, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%',
+              width: `${getChecklistPercent(lead.qualification_checklist)}%`,
+              background: getStateColor(status),
+              borderRadius: 6
             }} />
           </div>
-          <span className={
-            lead.intent_state === 'Decision-Ready' ? 'badge-intent badge-decision-ready' :
-            lead.intent_state === 'Comparing' ? 'badge-intent badge-comparing' :
-            'badge-intent badge-exploring'
-          }>
-            {lead.intent_state}
+          <span className="badge-intent" style={{ color: getStateColor(status), background: `${getStateColor(status)}20`, textTransform: 'capitalize' }}>
+            {status}
           </span>
         </div>
 
@@ -80,34 +95,29 @@ export default function LeadDetail() {
               <span style={{ fontSize: 14, fontWeight: 600 }}>{lead.persona || 'Not detected'}</span>
             </div>
             <div>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Signals Detected</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Qualification Checklist</span>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                {(lead.signals || []).map((s: string, i: number) => (
-                  <span key={i} style={{
+                {lead.qualification_checklist && Object.entries(lead.qualification_checklist).map(([k, v]) => (
+                  <span key={k} style={{
                     fontSize: 11, padding: '3px 10px', borderRadius: 10,
-                    background: 'rgba(99,102,241,0.1)', color: 'var(--accent-primary)', fontWeight: 500,
+                    background: v !== null ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.05)',
+                    color: v !== null ? 'var(--accent-green)' : 'var(--text-muted)',
+                    fontWeight: 500,
                   }}>
-                    {s}
+                    {v !== null ? '✅' : '❌'} {k.replace('_', ' ')}
                   </span>
                 ))}
-                {(!lead.signals || lead.signals.length === 0) && (
-                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>None yet</span>
-                )}
               </div>
             </div>
             <div style={{ display: 'flex', gap: 24 }}>
-              <div>
-                <span style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>CRM Filed</span>
-                <span style={{ fontSize: 14 }}>{lead.crm_filed ? '✅ Yes' : '❌ No'}</span>
-              </div>
-              <div>
-                <span style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Calendly Shown</span>
-                <span style={{ fontSize: 14 }}>{lead.calendly_shown ? '✅ Yes' : '⏳ Suppressed'}</span>
-              </div>
-            </div>
-            <div>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Resources Served</span>
-              <span style={{ fontSize: 14 }}>{(lead.resources_served || []).length} documents</span>
+               <div>
+                 <span style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Status</span>
+                 <span style={{ fontSize: 14, textTransform: 'capitalize' }}>{status}</span>
+               </div>
+               <div>
+                 <span style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Calendly Shown</span>
+                 <span style={{ fontSize: 14 }}>{lead.calendly_shown ? '✅ Yes' : '⏳ No'}</span>
+               </div>
             </div>
           </div>
         </div>

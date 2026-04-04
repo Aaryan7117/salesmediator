@@ -1,12 +1,10 @@
 """
 Chat route — the main AI pipeline for buyer conversations.
-POST /chat/{org_slug}
-V3: Explicit Criteria Verification Pipeline
+V4: Explicit Criteria Verification (Configurable)
 """
 
 import re
 import uuid
-import json
 from collections import defaultdict
 from datetime import datetime, timezone
 from time import time
@@ -14,26 +12,20 @@ from time import time
 from fastapi import APIRouter, HTTPException, Request, status
 
 from config import settings
-from models.schemas import ChatMessageRequest, ChatMessageResponse, ResourceServed, QualificationData
+from models.schemas import ChatMessageRequest, ChatMessageResponse, QualificationChecklist, KBResource
 from supabase_client import get_supabase
-from services.extraction import extract_qualification_data
+from services.qualification import extract_and_evaluate, load_qualification_criteria
 from services.persona import detect_persona
-from services.kb_retrieval import query_kb
+from services.kb_retrieval import query_kb, query_kb_resources
 from services.llm import generate_reply
-from services.pacing import (
-    fire_slack_webhook,
-    fire_generic_webhook,
-)
+from services.tools import draft_confirmation_email, generate_meeting_proposal
+from services.pacing import fire_slack_webhook, fire_generic_webhook
 
 router = APIRouter()
 
-# ---------------------------------------------------------------------------
-# Rate limiter
-# ---------------------------------------------------------------------------
 _rate_limits: dict[str, list[float]] = defaultdict(list)
 RATE_LIMIT_MAX = 30
-RATE_LIMIT_WINDOW = 3600  # seconds
-
+RATE_LIMIT_WINDOW = 3600
 
 def _check_rate_limit(session_id: str) -> None:
     now = time()
@@ -42,7 +34,7 @@ def _check_rate_limit(session_id: str) -> None:
     if len(_rate_limits[session_id]) >= RATE_LIMIT_MAX:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Rate limit exceeded. Maximum 30 messages per hour per session.",
+            detail="Rate limit exceeded.",
         )
     _rate_limits[session_id].append(now)
 
@@ -54,19 +46,15 @@ async def chat_with_org(org_slug: str, body: ChatMessageRequest, request: Reques
 
     sb = get_supabase()
 
-    # 1. Resolve org by slug
     org_result = sb.table("orgs").select("id, name").eq("slug", org_slug).execute()
     if not org_result.data:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Organisation not found.")
-
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Organization not found.")
     org = org_result.data[0]
     org_id = org["id"]
     org_name = org["name"]
 
-    # 2. Fetch session and lead state
     session_id = body.session_id or str(uuid.uuid4())
     _check_rate_limit(session_id)
-
     message = re.sub(r"<[^>]*>", "", body.message.strip())
 
     lead_result = sb.table("leads").select("*").eq("session_id", session_id).execute()
@@ -74,11 +62,9 @@ async def chat_with_org(org_slug: str, body: ChatMessageRequest, request: Reques
     if lead_result.data:
         lead = lead_result.data[0]
         conversation = lead.get("conversation") or []
-        qualification_data = lead.get("qualification_data") or {}
-        is_qualified = lead.get("is_qualified")
+        qualification_checklist = lead.get("qualification_checklist") or {}
+        qualification_status = lead.get("qualification_status", "collecting")
         persona = lead.get("persona")
-        calendly_shown = lead.get("calendly_shown", False)
-        resources_served = lead.get("resources_served") or []
     else:
         lead_id = str(uuid.uuid4())
         lead = {
@@ -86,179 +72,119 @@ async def chat_with_org(org_slug: str, body: ChatMessageRequest, request: Reques
             "org_id": org_id,
             "session_id": session_id,
             "persona": None,
-            "qualification_data": {},
-            "is_qualified": None,
-            "resources_served": [],
+            "qualification_checklist": {},
+            "qualification_status": "collecting",
             "conversation": [],
-            "crm_filed": False,
-            "calendly_shown": False,
             "intent_score": 0,
             "intent_state": "Exploring",
             "signals": []
         }
         sb.table("leads").insert(lead).execute()
         conversation = []
-        qualification_data = {}
-        is_qualified = None
+        qualification_checklist = {}
+        qualification_status = "collecting"
         persona = None
-        calendly_shown = False
-        resources_served = []
 
     now_str = datetime.now(timezone.utc).isoformat()
     conversation.append({"role": "user", "content": message, "timestamp": now_str})
 
-    # 3. Persona
     if persona is None and len([t for t in conversation if t["role"] == "user"]) <= 3:
         try:
             persona = await detect_persona([t["content"] for t in conversation if t["role"] == "user"], settings.groq_api_key)
         except Exception:
             persona = "Casual explorer"
 
-    # 4. Extract explicit criteria
-    new_qdata = await extract_qualification_data(conversation, settings.groq_api_key)
+    # Evaluation
+    was_qualified = (qualification_status == "qualified")
     
-    # Merge existing knowns with new discoveries, giving precedence to new if not null
-    for k, v in new_qdata.items():
-        if v is not None:
-            qualification_data[k] = v
+    # We pass the conversation context to extraction model
+    new_checklist, new_status = await extract_and_evaluate(org_id, conversation, settings.groq_api_key)
 
-    # 5. Evaluate criteria: size >= 50 AND timeline <= 3 is Qualified
-    was_qualified_before = is_qualified
-    is_qualified = None
-    
-    # Check if we have size and timeline
-    size = qualification_data.get("company_size")
-    timeline = qualification_data.get("timeline_months")
-    
-    # Ensure they are ints before comparing
-    if size is not None and timeline is not None:
-        try:
-            if int(size) >= 50 and int(timeline) <= 3:
-                is_qualified = True
-            else:
-                is_qualified = False
-        except ValueError:
-             pass # Failed to parse as numbers, stay None
+    # Calculate missing fields based on Org rules
+    req_fields, _ = load_qualification_criteria(org_id)
+    missing = [f for f in req_fields if not new_checklist.get(f)]
 
-    # 6. Retrieve from knowledge base
-    # If unqualified, we want to recommend 3 resources to educate.
-    # Otherwise, returning 1 is enough for Q&A.
-    kb_resources = []
-    chroma_client = request.app.state.chroma_client
-    embedding_model = request.app.state.embedding_model
-    
-    n_results = 3 if is_qualified is False else 1
+    # Retrieval + Tools
+    drafted_email = None
+    meeting_link = None
+    resources = []
+    structured_res = []
 
-    if chroma_client and embedding_model:
-        kb_resources = query_kb(message, org_id, embedding_model, chroma_client, n_results=n_results)
+    chroma = request.app.state.chroma_client
+    embed = request.app.state.embedding_model
 
-    # 7. Generate rule-controlled response
-    try:
-        reply = await generate_reply(
-            message=message,
-            conversation_history=conversation,
-            is_qualified=is_qualified,
-            qualification_data=qualification_data,
-            persona=persona,
-            kb_resources=kb_resources,
-            org_name=org_name,
-            groq_api_key=settings.groq_api_key,
-        )
-    except Exception as exc:
-        logger.error(f"LLM generate_reply FAILED: {type(exc).__name__}: {exc}")
-        reply = "I apologize, but I'm having trouble generating a response right now."
-
-    conversation.append({"role": "assistant", "content": reply, "timestamp": datetime.now(timezone.utc).isoformat()})
-
-    # Log resources
-    for res in kb_resources:
-        # only keep track of distinct resources
-        if not any(r["source_file"] == res["source_file"] for r in resources_served):
-            resources_served.append({
-                "title": res["title"],
-                "source_file": res["source_file"],
-                "relevance_score": res.get("relevance_score", 0),
-            })
-            
-    # Format a primary resource for backward compatibility
-    primary_resource = None
-    if kb_resources:
-        primary_resource = ResourceServed(
-            title=kb_resources[0]["title"],
-            source_file=kb_resources[0]["source_file"],
-            relevance_score=kb_resources[0].get("relevance_score", 0),
-            excerpt=kb_resources[0].get("excerpt", ""),
-        )
-
-    # 8. Trigger Tool Orchestrations
-    integration_result = sb.table("integrations").select("*").eq("org_id", org_id).execute()
-    integration = integration_result.data[0] if integration_result.data else None
-    
-    show_calendly = calendly_shown
-    calendly_link = integration.get("calendly_link") if integration else None
-
-    # Trigger tools only if newly qualified this turn
-    if is_qualified is True:
-        show_calendly = True if calendly_link else False
+    if new_status == "unqualified":
+        # Pull up to 3 structured KB links for email out
+        kb_data = query_kb_resources(org_id, count=3)
+        for r in kb_data:
+            structured_res.append(KBResource(title=r["title"], url=r["url"], type=r["type"], description=r.get("description", "")))
+    elif new_status == "qualified":
+        integration_result = sb.table("integrations").select("*").eq("org_id", org_id).execute()
+        integration = integration_result.data[0] if integration_result.data else None
+        cal_url = integration.get("calendly_link") if integration else None
         
-        if not was_qualified_before and integration:
+        meeting_link = generate_meeting_proposal(cal_url)
+        drafted_email = await draft_confirmation_email(new_checklist, settings.groq_api_key)
+        
+        if not was_qualified and integration:
              lead_data = {
                  "persona": persona,
-                 "qualification_data": qualification_data,
-                 "is_qualified": True,
+                 "qualification_status": new_status,
+                 "checklist": new_checklist,
                  "session_id": session_id,
                  "updated_at": now_str,
-                 # provide fallbacks for webhook expectations
+                 # fallbacks for webhook expectations
                  "intent_score": 100,
-                 "intent_state": "Decision-Ready",
              }
-             
              if integration.get("slack_webhook"):
                  await fire_slack_webhook(lead_data, integration["slack_webhook"])
              if integration.get("webhook_url"):
                  await fire_generic_webhook(lead_data, integration["webhook_url"])
+    else:
+        # Collecting - can still hit text knowledge base
+        if chroma and embed:
+            resources = query_kb(message, org_id, embed, chroma, n_results=1)
 
-
-    # 9. Log Intent History / Checklist state
     try:
-        turn_number = len([t for t in conversation if t["role"] == "user"])
-        sb.table("intent_history").insert({
-            "lead_id": lead["id"],
-            "turn_number": turn_number,
-            "score_before": 0, # maintained for backward compat schema
-            "score_after": 100 if is_qualified else 0,
-            "signals": list(qualification_data.keys()),
-        }).execute()
+        reply = await generate_reply(
+            message=message,
+            conversation_history=conversation,
+            qualification_status=new_status,
+            missing_fields=missing,
+            persona=persona,
+            kb_resources_text=resources,
+            structured_resources=[s.model_dump() for s in structured_res],
+            org_name=org_name,
+            groq_api_key=settings.groq_api_key,
+        )
     except Exception as exc:
-        logger.warning(f"Interaction log insert failed (non-fatal): {exc}")
+        logger.error(f"LLM Reply failed: {exc}")
+        reply = "I apologize, but I'm having trouble generating a response."
 
-    # 10. Save Lead
+    conversation.append({"role": "assistant", "content": reply, "timestamp": datetime.now(timezone.utc).isoformat()})
+
     update_data = {
-        "qualification_data": qualification_data,
-        "is_qualified": is_qualified,
+        "qualification_checklist": new_checklist,
+        "qualification_status": new_status,
         "persona": persona,
-        "resources_served": resources_served,
         "conversation": conversation,
-        "calendly_shown": show_calendly,
         "updated_at": datetime.now(timezone.utc).isoformat(),
-        # Backwards compatible state
-        "intent_score": 100 if is_qualified else 0,
-        "intent_state": "Decision-Ready" if is_qualified else "Exploring"
+        # For backward compatibility with existing data schemas in client
+        "intent_score": 100 if new_status == "qualified" else 0,
+        "intent_state": "Decision-Ready" if new_status == "qualified" else "Exploring",
     }
-
     sb.table("leads").update(update_data).eq("session_id", session_id).execute()
 
-    qdata_model = QualificationData(**qualification_data)
+    q_checklist_model = QualificationChecklist(**new_checklist)
 
     return ChatMessageResponse(
         reply=reply,
         session_id=session_id,
-        intent_score=100 if is_qualified else 0,
-        intent_state="Decision-Ready" if is_qualified else "Exploring",
-        persona=persona,
-        resource=primary_resource,
-        show_calendly=show_calendly,
-        calendly_link=calendly_link if show_calendly else None,
-        qualification_data=qdata_model,
-        is_qualified=is_qualified
+        qualification_status=new_status,
+        qualification_checklist=q_checklist_model,
+        drafted_email=drafted_email,
+        meeting_link=meeting_link,
+        resources=structured_res,
+        intent_score=100 if new_status == "qualified" else 0,
+        persona=persona
     )

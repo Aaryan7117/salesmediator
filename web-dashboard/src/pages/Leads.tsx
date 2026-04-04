@@ -27,14 +27,26 @@ export default function Leads() {
 
   const filtered = filter === 'all'
     ? leads
-    : leads.filter(l => l.intent_state === filter)
+    : leads.filter(l => (l.qualification_status || 'collecting') === filter)
 
   const getStateColor = (state: string) => {
     switch(state) {
-      case 'Decision-Ready': return 'var(--accent-green)'
-      case 'Comparing': return 'var(--accent-yellow)'
-      default: return 'var(--accent-blue)'
+      case 'qualified': return 'var(--accent-green)'
+      case 'unqualified': return 'var(--accent-red)'
+      default: return 'var(--accent-yellow)'
     }
+  }
+
+  const getChecklistCount = (cl: any = {}) => {
+    const total = Object.keys(cl).length || 6;
+    const checked = Object.values(cl).filter(v => v !== null && v !== undefined).length;
+    return `${checked}/${total}`
+  }
+
+  const getChecklistPercent = (cl: any = {}) => {
+    const total = Object.keys(cl).length || 6;
+    const checked = Object.values(cl).filter(v => v !== null && v !== undefined).length;
+    return Math.floor((checked / total) * 100);
   }
 
   return (
@@ -50,9 +62,9 @@ export default function Leads() {
       <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
         {[
           { label: 'All', value: 'all', count: leads.length },
-          { label: 'Exploring', value: 'Exploring', count: leads.filter(l => l.intent_state === 'Exploring').length },
-          { label: 'Comparing', value: 'Comparing', count: leads.filter(l => l.intent_state === 'Comparing').length },
-          { label: 'Decision-Ready', value: 'Decision-Ready', count: leads.filter(l => l.intent_state === 'Decision-Ready').length },
+          { label: 'Collecting', value: 'collecting', count: leads.filter(l => (l.qualification_status || 'collecting') === 'collecting').length },
+          { label: 'Qualified', value: 'qualified', count: leads.filter(l => l.qualification_status === 'qualified').length },
+          { label: 'Unqualified', value: 'unqualified', count: leads.filter(l => l.qualification_status === 'unqualified').length },
         ].map(f => (
           <button
             key={f.value}
@@ -79,14 +91,15 @@ export default function Leads() {
               <thead>
                 <tr>
                   <th>Buyer</th>
-                  <th>Intent Score</th>
-                  <th>State</th>
-                  <th>Signals</th>
+                  <th>Progress</th>
+                  <th>Status</th>
                   <th>Last Active</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((lead: any) => (
+                {filtered.map((lead: any) => {
+                  const status = lead.qualification_status || 'collecting'
+                  return (
                   <tr key={lead.id}>
                     <td>
                       <Link
@@ -95,7 +108,7 @@ export default function Leads() {
                       >
                         <div
                           className="lead-avatar"
-                          style={{ background: getStateColor(lead.intent_state), width: 36, height: 36, fontSize: 13 }}
+                          style={{ background: getStateColor(status), width: 36, height: 36, fontSize: 13 }}
                         >
                           {(lead.persona || 'L')[0].toUpperCase()}
                         </div>
@@ -111,49 +124,29 @@ export default function Leads() {
                     </td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <span style={{ fontWeight: 700, fontSize: 18, color: getStateColor(lead.intent_state), minWidth: 32 }}>
-                          {lead.intent_score}
+                        <span style={{ fontWeight: 700, fontSize: 14, color: getStateColor(status), minWidth: 32 }}>
+                          {getChecklistCount(lead.qualification_checklist)}
                         </span>
-                        <div className="intent-gauge" style={{ width: 80 }}>
+                        <div className="intent-gauge" style={{ width: 80, borderRadius: 4, background: 'var(--border-subtle)', height: 6, overflow: 'hidden' }}>
                           <div
-                            className="intent-gauge-fill"
                             style={{
-                              width: `${lead.intent_score}%`,
-                              background: getStateColor(lead.intent_state),
+                              height: '100%',
+                              width: `${getChecklistPercent(lead.qualification_checklist)}%`,
+                              background: getStateColor(status),
+                              borderRadius: 4
                             }}
                           />
                         </div>
                       </div>
                     </td>
                     <td>
-                      <span className={
-                        lead.intent_state === 'Decision-Ready' ? 'badge-intent badge-decision-ready' :
-                        lead.intent_state === 'Comparing' ? 'badge-intent badge-comparing' :
-                        'badge-intent badge-exploring'
-                      }>
+                      <span className="badge-intent" style={{ color: getStateColor(status), background: \`\${getStateColor(status)}20\`, textTransform: 'capitalize' }}>
                         <span className="live-dot" style={{
                           width: 6, height: 6,
-                          background: getStateColor(lead.intent_state),
-                          animation: lead.intent_state === 'Decision-Ready' ? 'pulse-live 1.5s infinite' : 'none',
+                          background: getStateColor(status),
                         }} />
-                        {lead.intent_state}
+                        {status}
                       </span>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxWidth: 200 }}>
-                        {(lead.signals || []).slice(0, 3).map((s: string, i: number) => (
-                          <span key={i} style={{
-                            fontSize: 11,
-                            padding: '2px 8px',
-                            borderRadius: 10,
-                            background: 'rgba(99,102,241,0.1)',
-                            color: 'var(--accent-primary)',
-                            fontWeight: 500,
-                          }}>
-                            {s}
-                          </span>
-                        ))}
-                      </div>
                     </td>
                     <td style={{ fontSize: 13, color: 'var(--text-muted)' }}>
                       {lead.updated_at
@@ -161,7 +154,7 @@ export default function Leads() {
                         : '—'}
                     </td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>
