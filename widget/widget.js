@@ -68,7 +68,7 @@
 
       #sg-widget-panel {
         position: fixed; bottom: 88px; z-index: 999998;
-        width: 420px; max-height: 650px; border-radius: 16px;
+        width: 500px; height: 80vh; border-radius: 16px;
         background: #ffffff; overflow: hidden;
         box-shadow: 0 12px 48px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
         display: flex; flex-direction: column;
@@ -103,7 +103,7 @@
 
       .sg-messages {
         flex: 1; overflow-y: auto; padding: 16px; display: flex;
-        flex-direction: column; gap: 12px; min-height: 360px; max-height: 480px;
+        flex-direction: column; gap: 12px; min-height: 0;
         background: #f8fafc;
       }
       .sg-msg { max-width: 80%; display: flex; gap: 8px; }
@@ -170,7 +170,7 @@
       }
       .sg-video-card:hover { transform: scale(1.01); }
       .sg-video-card iframe, .sg-video-card video {
-        width: 100%; height: 200px; border: none; display: block;
+        width: 100%; height: 280px; border: none; display: block;
       }
       .sg-video-card video { background: #000; object-fit: cover; }
       .sg-video-meta {
@@ -534,13 +534,16 @@
         embedHtml = `<iframe src="https://www.loom.com/embed/${loomId[1]}" allowfullscreen loading="lazy"></iframe>`;
       }
     }
-    // Google Drive embed — converts share link to preview iframe
+    // Google Drive embed — use proper embed player URL
     else if (url.includes('drive.google.com')) {
       const driveMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
       if (driveMatch) {
-        embedHtml = `<iframe src="https://drive.google.com/file/d/${driveMatch[1]}/preview" allowfullscreen loading="lazy"></iframe>`;
+        embedHtml = `<iframe src="https://drive.google.com/file/d/${driveMatch[1]}/preview" allow="autoplay; encrypted-media" allowfullscreen loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>`;
       } else {
-        embedHtml = `<iframe src="${escapeHtml(url.replace('/view', '/preview'))}" allowfullscreen loading="lazy"></iframe>`;
+        // Fallback: open externally
+        embedHtml = `<div style="padding:20px;text-align:center;background:#1e293b;">
+          <a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="color:#818cf8;font-size:14px;font-weight:600;text-decoration:none;">▶ Open Video in Google Drive</a>
+        </div>`;
       }
     }
     // Dropbox — convert share link to raw playable URL
