@@ -111,11 +111,37 @@ class ResourceServed(BaseModel):
     excerpt: str
 
 
+class QualificationChecklist(BaseModel):
+    """Structured fields extracted from conversation."""
+    name: str | None = None
+    company: str | None = None
+    role: str | None = None
+    use_case: str | None = None
+    company_size: int | None = None
+    timeline: str | None = None
+    timeline_months: int | None = None
+
+
+class KBResource(BaseModel):
+    """Structured KB resource with URL and type."""
+    title: str
+    url: str
+    type: str  # "spec" | "video" | "doc" | "guide"
+    description: str
+
+
 class ChatMessageResponse(BaseModel):
     reply: str
     session_id: str
-    intent_score: int
-    intent_state: str
+    # Qualification fields (new)
+    qualification_status: str = "collecting"  # "collecting" | "qualified" | "unqualified"
+    qualification_checklist: QualificationChecklist | None = None
+    drafted_email: str | None = None
+    meeting_link: str | None = None
+    kb_resources: list[KBResource] = []
+    # Legacy fields (backward compat)
+    intent_score: int = 0
+    intent_state: str = "Exploring"
     persona: str | None = None
     resource: ResourceServed | None = None
     show_calendly: bool = False
@@ -144,6 +170,8 @@ class LeadResponse(BaseModel):
     crm_filed: bool = False
     github_issue_url: str | None = None
     calendly_shown: bool = False
+    qualification_status: str = "collecting"
+    qualification_checklist: dict | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
@@ -155,6 +183,8 @@ class LeadListItem(BaseModel):
     intent_score: int = 0
     intent_state: str = "Exploring"
     signals: list[str] = []
+    qualification_status: str = "collecting"
+    qualification_checklist: dict | None = None
     updated_at: datetime | None = None
 
 

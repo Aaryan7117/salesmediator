@@ -10,6 +10,8 @@ interface LiveLead {
   signals: string[]
   calendly_shown: boolean
   updated_at: string | null
+  qualification_status?: string
+  qualification_checklist?: Record<string, any> | null
 }
 
 export default function LiveMonitor() {
@@ -117,11 +119,19 @@ export default function LiveMonitor() {
     finally { setTakingOver(false) }
   }
 
-  const getScoreColor = (s: number) =>
-    s >= 76 ? 'var(--accent-green)' : s >= 41 ? 'var(--accent-yellow)' : 'var(--text-muted)'
 
-  const stateEmoji = (s: string) =>
-    s === 'Decision-Ready' ? '🔥' : s === 'Comparing' ? '⚡' : '🔵'
+  const qualStatusColor = (s: string | undefined) =>
+    s === 'qualified' ? 'var(--accent-green)' : s === 'unqualified' ? 'var(--accent-red)' : 'var(--accent-yellow)'
+
+  const qualStatusLabel = (s: string | undefined) =>
+    s === 'qualified' ? '🟢 Qualified' : s === 'unqualified' ? '🔴 Unqualified' : '🟡 Collecting'
+
+  const getChecklistProgress = (checklist: Record<string, any> | null | undefined) => {
+    if (!checklist) return { filled: 0, total: 6 }
+    const fields = ['name', 'company', 'role', 'use_case', 'company_size', 'timeline']
+    const filled = fields.filter(f => checklist[f] != null && checklist[f] !== '').length
+    return { filled, total: fields.length }
+  }
 
   const timeSince = (dateStr: string | null) => {
     if (!dateStr) return ''
@@ -167,7 +177,9 @@ export default function LiveMonitor() {
               <div className="empty-state" style={{ padding: 32 }}>
                 <p>No active sessions yet</p>
               </div>
-            ) : sessions.map(s => (
+            ) : sessions.map(s => {
+              const progress = getChecklistProgress(s.qualification_checklist)
+              return (
               <div
                 key={s.id}
                 onClick={() => setSelected(s.id)}
@@ -181,86 +193,81 @@ export default function LiveMonitor() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {stateEmoji(s.intent_state)} {s.persona || 'New Visitor'}
+                    {s.qualification_checklist?.name || s.persona || 'New Visitor'}
                   </span>
-                  <span style={{ fontSize: 18, fontWeight: 700, color: getScoreColor(s.intent_score) }}>
-                    {s.intent_score}
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 8,
+                    background: s.qualification_status === 'qualified' ? 'rgba(16,185,129,0.1)' : s.qualification_status === 'unqualified' ? 'rgba(239,68,68,0.1)' : 'rgba(245,158,11,0.1)',
+                    color: qualStatusColor(s.qualification_status),
+                  }}>
+                    {qualStatusLabel(s.qualification_status)}
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    {s.intent_state}
+                    {s.qualification_checklist?.company || 'Unknown company'}
                   </span>
                   <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                     {timeSince(s.updated_at)}
                   </span>
                 </div>
-                {s.signals.length > 0 && (
-                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
-                    {s.signals.slice(-2).map(sig => (
-                      <span key={sig} className="signal-pill">{sig}</span>
-                    ))}
+                <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)' }}>
+                    <div style={{
+                      width: `${(progress.filled / progress.total) * 100}%`,
+                      height: '100%', borderRadius: 2, transition: 'width 0.3s',
+                      background: progress.filled === progress.total ? 'var(--accent-green)' : 'var(--accent-primary)',
+                    }} />
                   </div>
-                )}
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{progress.filled}/{progress.total}</span>
+                </div>
               </div>
-            ))}
+            )})}
           </div>
         </div>
 
         {/* Agent Brain Panel */}
         {selected && selectedDetail ? (
           <div className="card" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            {/* Brain Header */}
+            {/* Qualification Header */}
             <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12,
               padding: '0 0 16px', borderBottom: '1px solid var(--border-subtle)', marginBottom: 16,
             }}>
-              {/* Score */}
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Score</div>
-                <div style={{ fontSize: 28, fontWeight: 800, color: getScoreColor(selectedDetail.intent_score) }}>
-                  {selectedDetail.intent_score}
-                </div>
-              </div>
-              {/* State */}
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>State</div>
-                <div className={`intent-badge intent-${selectedDetail.intent_state?.toLowerCase().replace('-', '')}`} style={{ fontSize: 13 }}>
-                  {selectedDetail.intent_state}
-                </div>
-              </div>
-              {/* Persona */}
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Persona</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {selectedDetail.persona || '—'}
-                </div>
-              </div>
-              {/* Calendly Gate */}
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Calendly</div>
-                <div style={{
-                  fontSize: 13, fontWeight: 700,
-                  color: selectedDetail.calendly_shown ? 'var(--accent-green)' : 'var(--accent-red)',
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <span style={{
+                  fontSize: 14, fontWeight: 700, padding: '5px 14px', borderRadius: 10,
+                  background: selectedDetail.qualification_status === 'qualified' ? 'rgba(16,185,129,0.12)' : selectedDetail.qualification_status === 'unqualified' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
+                  color: qualStatusColor(selectedDetail.qualification_status),
                 }}>
-                  {selectedDetail.calendly_shown ? '✓ Shown' : '✗ Gated'}
-                </div>
+                  {qualStatusLabel(selectedDetail.qualification_status)}
+                </span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  {selectedDetail.persona || 'Persona detecting...'}
+                </span>
+              </div>
+
+              {/* Qualification Checklist */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                {['name', 'company', 'role', 'use_case', 'company_size', 'timeline'].map(field => {
+                  const value = selectedDetail.qualification_checklist?.[field]
+                  const label = field.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
+                  return (
+                    <div key={field} style={{
+                      padding: '8px 10px', borderRadius: 8, fontSize: 12,
+                      background: value ? 'rgba(16,185,129,0.06)' : 'rgba(255,255,255,0.03)',
+                      border: `1px solid ${value ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.06)'}`,
+                    }}>
+                      <div style={{ color: 'var(--text-muted)', fontSize: 10, marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        {value ? '✅' : '⬜'} {label}
+                      </div>
+                      <div style={{ color: value ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: value ? 600 : 400, fontSize: 12 }}>
+                        {value ?? '—'}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
-
-            {/* Signals */}
-            {selectedDetail.signals?.length > 0 && (
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
-                  Detected Signals
-                </div>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  {selectedDetail.signals.map((sig: string) => (
-                    <span key={sig} className="signal-pill">{sig}</span>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Chat Transcript */}
             <div style={{
