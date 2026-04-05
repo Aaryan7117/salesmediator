@@ -137,19 +137,20 @@
 
       /* ─── Panel ─── */
       #sg-widget-panel {
-        position: fixed; bottom: 96px; z-index: 999998;
-        width: 420px; max-width: calc(100vw - 32px); height: 72vh; max-height: 640px;
+        position: fixed; bottom: 100px; z-index: 999998;
+        width: 380px; max-width: calc(100vw - 48px); height: 68vh; max-height: 600px;
         border-radius: 24px;
-        background: rgba(10, 10, 18, 0.92);
+        background: rgba(12, 12, 22, 0.95);
         backdrop-filter: blur(40px) saturate(180%);
         -webkit-backdrop-filter: blur(40px) saturate(180%);
         overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.08);
         box-shadow:
-          0 32px 80px rgba(0,0,0,0.5),
-          0 0 0 1px rgba(255,255,255,0.06),
-          inset 0 1px 0 rgba(255,255,255,0.05);
+          0 25px 60px rgba(0,0,0,0.55),
+          0 8px 24px rgba(0,0,0,0.3),
+          inset 0 1px 0 rgba(255,255,255,0.06);
         display: flex; flex-direction: column;
-        opacity: 0; transform: translateY(20px) scale(0.92);
+        opacity: 0; transform: translateY(24px) scale(0.95);
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         pointer-events: none;
       }
@@ -161,9 +162,11 @@
       .sg-header {
         background: linear-gradient(135deg, ${bc}ee, ${brandDark}ee);
         backdrop-filter: blur(20px);
-        padding: 18px 20px;
+        padding: 20px 22px;
         display: flex; align-items: center; gap: 14px; color: white;
         position: relative; overflow: hidden;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        min-height: 72px;
       }
       .sg-header::after {
         content: '';
@@ -210,8 +213,8 @@
 
       /* ─── Messages ─── */
       .sg-messages {
-        flex: 1; overflow-y: auto; padding: 20px; display: flex;
-        flex-direction: column; gap: 14px; min-height: 0;
+        flex: 1; overflow-y: auto; padding: 24px 20px; display: flex;
+        flex-direction: column; gap: 16px; min-height: 0;
         background: transparent;
         scrollbar-width: thin;
         scrollbar-color: rgba(255,255,255,0.08) transparent;
@@ -226,13 +229,13 @@
         to { opacity: 1; transform: translateY(0); }
       }
       .sg-msg {
-        max-width: 85%; display: flex; gap: 10px;
+        max-width: 82%; display: flex; gap: 10px;
         animation: sg-msg-in 0.3s ease-out;
       }
       .sg-msg-user { align-self: flex-end; flex-direction: row-reverse; }
       .sg-msg-bubble {
-        padding: 12px 16px; border-radius: 18px; font-size: 13.5px;
-        line-height: 1.65; word-wrap: break-word;
+        padding: 14px 18px; border-radius: 18px; font-size: 13.5px;
+        line-height: 1.7; word-wrap: break-word;
       }
       .sg-msg-user .sg-msg-bubble {
         background: linear-gradient(135deg, ${bc}, ${brandDark});
@@ -484,8 +487,9 @@
 
       /* ─── Input Area ─── */
       .sg-input-area {
-        padding: 16px 18px; border-top: 1px solid rgba(255,255,255,0.04);
-        display: flex; gap: 10px; background: rgba(0,0,0,0.2);
+        padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.06);
+        display: flex; gap: 10px; align-items: center;
+        background: rgba(0,0,0,0.15);
       }
       .sg-input {
         flex: 1; padding: 12px 16px;
@@ -541,9 +545,9 @@
 
       /* ─── Powered By ─── */
       .sg-powered {
-        text-align: center; padding: 8px; font-size: 10px; color: #4A5568;
-        background: rgba(0,0,0,0.2);
-        border-top: 1px solid rgba(255,255,255,0.03);
+        text-align: center; padding: 10px 16px; font-size: 10px; color: #4A5568;
+        background: rgba(0,0,0,0.15);
+        border-top: 1px solid rgba(255,255,255,0.04);
         font-weight: 500; letter-spacing: 0.3px;
       }
       .sg-powered a {
@@ -557,9 +561,9 @@
         #sg-widget-panel {
           position: fixed !important; top: 0 !important; left: 0 !important;
           right: 0 !important; bottom: 0 !important;
-          width: 100% !important; max-height: 100% !important;
+          width: 100% !important; max-width: 100% !important; max-height: 100% !important;
           height: 100% !important;
-          border-radius: 0 !important;
+          border-radius: 0 !important; border: none !important;
         }
         #sg-widget-panel .sg-messages { max-height: none; }
       }
