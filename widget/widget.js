@@ -537,11 +537,15 @@
 
   function addVideoCard(resource) {
     const container = document.getElementById("sg-messages");
+    const url = resource.url || '';
+
+    // Skip if no valid URL — prevents empty dark boxes
+    if (!url || url.trim() === '' || url === '#') return;
+
     const el = document.createElement("div");
     el.className = "sg-video-card";
 
     let embedHtml = '';
-    const url = resource.url || '';
 
     // YouTube embed
     const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
