@@ -1,12 +1,19 @@
 /**
- * SalesGen Widget SDK — Embeddable AI Sales Agent
+ * SalesGen Widget SDK — Embeddable AI Sales Agent (Premium Edition)
  *
  * Usage:
  * <script src="https://cdn.salesgen.com/widget.js" data-org="your-org-slug"></script>
  *
+ * Features:
+ *   - Premium dark glassmorphic UI with gradient accents
+ *   - Markdown rendering (bold, italic, lists, code blocks, tables)
+ *   - KaTeX math rendering for LaTeX expressions
+ *   - Citation badges, video embeds, KB resource links
+ *   - Voice input, Calendly integration
+ *   - Zero dependencies (KaTeX loaded from CDN on demand)
+ *
  * The script auto-injects a chat widget, fetches the org's config
  * (colors, greeting, bot name), and handles all communication.
- * Zero dependencies. Works on any website.
  */
 (function () {
   "use strict";
@@ -27,6 +34,7 @@
   let isOpen = false;
   let isLoading = false;
   let messages = [];
+  let katexLoaded = false;
   let config = {
     bot_name: "AI Assistant",
     greeting: "Hi! How can I help you today?",
@@ -34,6 +42,30 @@
     position: "right",
     avatar_url: null,
   };
+
+  // ── Load KaTeX from CDN ──
+  function loadKaTeX() {
+    if (katexLoaded) return Promise.resolve();
+    return new Promise((resolve) => {
+      // CSS
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
+      document.head.appendChild(link);
+      // JS
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js";
+      script.onload = () => {
+        katexLoaded = true;
+        resolve();
+      };
+      script.onerror = () => {
+        katexLoaded = false;
+        resolve();
+      };
+      document.head.appendChild(script);
+    });
+  }
 
   // ── Fetch Widget Config ──
   async function fetchConfig() {
@@ -49,209 +81,484 @@
     }
   }
 
+  // ── Generate HSL palette from brand color ──
+  function hexToHSL(hex) {
+    let r = parseInt(hex.slice(1, 3), 16) / 255;
+    let g = parseInt(hex.slice(3, 5), 16) / 255;
+    let b = parseInt(hex.slice(5, 7), 16) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    if (max === min) { h = s = 0; }
+    else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        case b: h = ((r - g) / d + 4) / 6; break;
+      }
+    }
+    return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+  }
+
   // ── Inject Styles ──
   function injectStyles() {
     const style = document.createElement("style");
     style.id = "salesgen-widget-styles";
-    style.textContent = `
-      #sg-widget-container * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-      #sg-widget-fab {
-        position: fixed; bottom: 20px; z-index: 999999;
-        width: 56px; height: 56px; border-radius: 28px; border: none;
-        background: ${config.brand_color}; color: white; cursor: pointer;
-        box-shadow: 0 4px 20px ${config.brand_color}44;
-        display: flex; align-items: center; justify-content: center;
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      #sg-widget-fab:hover { transform: scale(1.08); box-shadow: 0 6px 28px ${config.brand_color}66; }
-      #sg-widget-fab svg { width: 24px; height: 24px; transition: all 0.2s; }
+    const bc = config.brand_color;
+    const hsl = hexToHSL(bc);
+    const brandDark = `hsl(${hsl.h}, ${Math.min(hsl.s + 10, 100)}%, ${Math.max(hsl.l - 15, 10)}%)`;
+    const brandGlow = `${bc}40`;
+    const brandGlow2 = `${bc}20`;
 
+    style.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+      #sg-widget-container * {
+        box-sizing: border-box; margin: 0; padding: 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+
+      /* ─── FAB Button ─── */
+      #sg-widget-fab {
+        position: fixed; bottom: 24px; z-index: 999999;
+        width: 60px; height: 60px; border-radius: 20px; border: none;
+        background: linear-gradient(135deg, ${bc}, ${brandDark});
+        color: white; cursor: pointer;
+        box-shadow: 0 8px 32px ${brandGlow}, 0 0 0 1px ${bc}22;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      #sg-widget-fab:hover {
+        transform: scale(1.1) translateY(-2px);
+        box-shadow: 0 12px 40px ${brandGlow}, 0 0 60px ${brandGlow2};
+      }
+      #sg-widget-fab svg { width: 26px; height: 26px; transition: all 0.3s; }
+
+      /* ─── Panel ─── */
       #sg-widget-panel {
-        position: fixed; bottom: 88px; z-index: 999998;
-        width: 500px; height: 80vh; border-radius: 16px;
-        background: #ffffff; overflow: hidden;
-        box-shadow: 0 12px 48px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
+        position: fixed; bottom: 96px; z-index: 999998;
+        width: 420px; max-width: calc(100vw - 32px); height: 72vh; max-height: 640px;
+        border-radius: 24px;
+        background: rgba(10, 10, 18, 0.92);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        overflow: hidden;
+        box-shadow:
+          0 32px 80px rgba(0,0,0,0.5),
+          0 0 0 1px rgba(255,255,255,0.06),
+          inset 0 1px 0 rgba(255,255,255,0.05);
         display: flex; flex-direction: column;
-        opacity: 0; transform: translateY(16px) scale(0.96);
-        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        opacity: 0; transform: translateY(20px) scale(0.92);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         pointer-events: none;
       }
       #sg-widget-panel.sg-open {
         opacity: 1; transform: translateY(0) scale(1); pointer-events: all;
       }
 
+      /* ─── Header ─── */
       .sg-header {
-        background: ${config.brand_color}; padding: 16px 20px;
-        display: flex; align-items: center; gap: 12px; color: white;
+        background: linear-gradient(135deg, ${bc}ee, ${brandDark}ee);
+        backdrop-filter: blur(20px);
+        padding: 18px 20px;
+        display: flex; align-items: center; gap: 14px; color: white;
+        position: relative; overflow: hidden;
+      }
+      .sg-header::after {
+        content: '';
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%);
+        pointer-events: none;
       }
       .sg-header-avatar {
-        width: 36px; height: 36px; border-radius: 50%;
-        background: rgba(255,255,255,0.2);
+        width: 40px; height: 40px; border-radius: 14px;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
         display: flex; align-items: center; justify-content: center;
-        font-size: 14px; font-weight: 700;
+        font-size: 15px; font-weight: 800; letter-spacing: -0.5px;
+        border: 1px solid rgba(255,255,255,0.1);
+        position: relative; z-index: 1;
       }
-      .sg-header-info { flex: 1; }
-      .sg-header-name { font-size: 15px; font-weight: 600; }
-      .sg-header-status { font-size: 12px; opacity: 0.8; }
+      .sg-header-info { flex: 1; position: relative; z-index: 1; }
+      .sg-header-name {
+        font-size: 15px; font-weight: 700; letter-spacing: -0.3px;
+      }
+      .sg-header-status {
+        font-size: 11px; opacity: 0.75; font-weight: 500;
+        display: flex; align-items: center; gap: 5px; margin-top: 2px;
+      }
+      .sg-header-status::before {
+        content: '';
+        width: 6px; height: 6px; border-radius: 50%;
+        background: #34D399;
+        box-shadow: 0 0 8px #34D39966;
+        animation: sg-status-pulse 2s ease-in-out infinite;
+      }
+      @keyframes sg-status-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
       .sg-close-btn {
-        background: rgba(255,255,255,0.15); border: none; border-radius: 8px;
-        width: 32px; height: 32px; display: flex; align-items: center;
+        background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        width: 34px; height: 34px; display: flex; align-items: center;
         justify-content: center; cursor: pointer; color: white;
-        transition: background 0.2s;
+        transition: all 0.2s; position: relative; z-index: 1;
       }
-      .sg-close-btn:hover { background: rgba(255,255,255,0.25); }
+      .sg-close-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.05); }
 
+      /* ─── Messages ─── */
       .sg-messages {
-        flex: 1; overflow-y: auto; padding: 16px; display: flex;
-        flex-direction: column; gap: 12px; min-height: 0;
-        background: #f8fafc;
+        flex: 1; overflow-y: auto; padding: 20px; display: flex;
+        flex-direction: column; gap: 14px; min-height: 0;
+        background: transparent;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,0.08) transparent;
       }
-      .sg-msg { max-width: 80%; display: flex; gap: 8px; }
-      .sg-msg-user {
-        align-self: flex-end; flex-direction: row-reverse;
+      .sg-messages::-webkit-scrollbar { width: 4px; }
+      .sg-messages::-webkit-scrollbar-track { background: transparent; }
+      .sg-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+      /* Entrance animation for messages */
+      @keyframes sg-msg-in {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
       }
+      .sg-msg {
+        max-width: 85%; display: flex; gap: 10px;
+        animation: sg-msg-in 0.3s ease-out;
+      }
+      .sg-msg-user { align-self: flex-end; flex-direction: row-reverse; }
       .sg-msg-bubble {
-        padding: 10px 14px; border-radius: 14px; font-size: 14px;
-        line-height: 1.5; word-wrap: break-word;
+        padding: 12px 16px; border-radius: 18px; font-size: 13.5px;
+        line-height: 1.65; word-wrap: break-word;
       }
       .sg-msg-user .sg-msg-bubble {
-        background: ${config.brand_color}; color: white;
-        border-bottom-right-radius: 4px;
+        background: linear-gradient(135deg, ${bc}, ${brandDark});
+        color: white;
+        border-bottom-right-radius: 6px;
+        box-shadow: 0 4px 16px ${brandGlow};
       }
       .sg-msg-bot .sg-msg-bubble {
-        background: white; color: #1e293b;
-        border: 1px solid #e2e8f0; border-bottom-left-radius: 4px;
+        background: rgba(255,255,255,0.06);
+        color: #E2E8F0;
+        border: 1px solid rgba(255,255,255,0.06);
+        border-bottom-left-radius: 6px;
       }
       .sg-msg-avatar {
-        width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+        width: 30px; height: 30px; border-radius: 10px; flex-shrink: 0;
         display: flex; align-items: center; justify-content: center;
-        font-size: 11px; font-weight: 700; color: white;
+        font-size: 10px; font-weight: 800; color: white;
+        margin-top: 2px; letter-spacing: -0.3px;
       }
-      .sg-msg-bot .sg-msg-avatar { background: ${config.brand_color}; }
-      .sg-msg-user .sg-msg-avatar { background: #64748b; }
+      .sg-msg-bot .sg-msg-avatar {
+        background: linear-gradient(135deg, ${bc}, ${brandDark});
+        box-shadow: 0 2px 8px ${brandGlow};
+      }
+      .sg-msg-user .sg-msg-avatar {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.06);
+        color: #94A3B8;
+      }
 
-      .sg-typing { display: flex; gap: 4px; padding: 10px 14px;
-        background: white; border-radius: 14px; border: 1px solid #e2e8f0;
-        align-self: flex-start; width: fit-content; }
+      /* ─── Rich Text Formatting inside bot bubbles ─── */
+      .sg-msg-bot .sg-msg-bubble strong, .sg-msg-bot .sg-msg-bubble b {
+        color: #FFFFFF; font-weight: 700;
+      }
+      .sg-msg-bot .sg-msg-bubble em, .sg-msg-bot .sg-msg-bubble i {
+        color: #CBD5E1; font-style: italic;
+      }
+      .sg-msg-bot .sg-msg-bubble code {
+        background: rgba(255,255,255,0.08); color: #A5B4FC;
+        padding: 2px 7px; border-radius: 6px; font-size: 12px;
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        border: 1px solid rgba(255,255,255,0.06);
+      }
+      .sg-msg-bot .sg-msg-bubble pre {
+        background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 12px; padding: 14px 16px; margin: 10px 0;
+        overflow-x: auto; font-size: 12px; line-height: 1.6;
+      }
+      .sg-msg-bot .sg-msg-bubble pre code {
+        background: none; border: none; padding: 0; color: #A5B4FC; font-size: 12px;
+      }
+      .sg-msg-bot .sg-msg-bubble ul, .sg-msg-bot .sg-msg-bubble ol {
+        padding-left: 18px; margin: 8px 0;
+      }
+      .sg-msg-bot .sg-msg-bubble li {
+        margin: 4px 0; color: #CBD5E1;
+      }
+      .sg-msg-bot .sg-msg-bubble li::marker {
+        color: ${bc};
+      }
+      .sg-msg-bot .sg-msg-bubble h1, .sg-msg-bot .sg-msg-bubble h2,
+      .sg-msg-bot .sg-msg-bubble h3, .sg-msg-bot .sg-msg-bubble h4 {
+        color: #FFFFFF; margin: 12px 0 6px; font-weight: 700;
+      }
+      .sg-msg-bot .sg-msg-bubble h1 { font-size: 18px; }
+      .sg-msg-bot .sg-msg-bubble h2 { font-size: 16px; }
+      .sg-msg-bot .sg-msg-bubble h3 { font-size: 14px; }
+      .sg-msg-bot .sg-msg-bubble table {
+        width: 100%; border-collapse: collapse; margin: 10px 0;
+        font-size: 12px;
+      }
+      .sg-msg-bot .sg-msg-bubble th {
+        background: rgba(255,255,255,0.06); color: #FFFFFF;
+        padding: 8px 12px; text-align: left; font-weight: 700;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+      }
+      .sg-msg-bot .sg-msg-bubble td {
+        padding: 7px 12px; color: #CBD5E1;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+      }
+      .sg-msg-bot .sg-msg-bubble tr:hover td {
+        background: rgba(255,255,255,0.02);
+      }
+      .sg-msg-bot .sg-msg-bubble blockquote {
+        border-left: 3px solid ${bc};
+        padding: 6px 12px; margin: 8px 0;
+        background: rgba(255,255,255,0.03);
+        border-radius: 0 8px 8px 0;
+        color: #94A3B8; font-style: italic;
+      }
+      .sg-msg-bot .sg-msg-bubble hr {
+        border: none; border-top: 1px solid rgba(255,255,255,0.06);
+        margin: 12px 0;
+      }
+      /* KaTeX inside bubbles */
+      .sg-msg-bot .sg-msg-bubble .katex-display {
+        margin: 12px 0; overflow-x: auto;
+      }
+      .sg-msg-bot .sg-msg-bubble .katex {
+        color: #E2E8F0; font-size: 1.1em;
+      }
+      .sg-msg-bot .sg-msg-bubble .sg-math-block {
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 12px; padding: 16px;
+        margin: 10px 0; overflow-x: auto;
+        text-align: center;
+      }
+      .sg-msg-bot .sg-msg-bubble .sg-math-inline .katex {
+        font-size: 1em;
+      }
+
+      /* ─── Typing Indicator ─── */
+      .sg-typing {
+        display: flex; gap: 5px; padding: 12px 16px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 18px; border-bottom-left-radius: 6px;
+        align-self: flex-start; width: fit-content;
+        animation: sg-msg-in 0.3s ease-out;
+      }
       .sg-typing span {
-        width: 7px; height: 7px; border-radius: 50%; background: #94a3b8;
-        animation: sg-bounce 1.4s infinite; }
+        width: 7px; height: 7px; border-radius: 50%;
+        background: rgba(255,255,255,0.3);
+        animation: sg-bounce 1.4s infinite;
+      }
       .sg-typing span:nth-child(2) { animation-delay: 0.2s; }
       .sg-typing span:nth-child(3) { animation-delay: 0.4s; }
-      @keyframes sg-bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+      @keyframes sg-bounce {
+        0%,60%,100% { transform: translateY(0); }
+        30% { transform: translateY(-6px); }
+      }
 
+      /* ─── Resource Cards ─── */
       .sg-resource {
-        margin-top: 8px; padding: 10px 14px; background: #f0f4ff;
-        border: 1px solid #c7d2fe; border-radius: 10px; cursor: pointer;
-        transition: background 0.2s;
+        margin-top: 8px; padding: 12px 16px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 14px; cursor: pointer;
+        transition: all 0.25s;
+        animation: sg-msg-in 0.3s ease-out;
       }
-      .sg-resource:hover { background: #e0e7ff; }
-      .sg-resource-title { font-size: 13px; font-weight: 600; color: ${config.brand_color}; }
-      .sg-resource-meta { font-size: 11px; color: #64748b; margin-top: 2px; }
+      .sg-resource:hover {
+        background: rgba(255,255,255,0.08);
+        border-color: ${bc}44;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      }
+      .sg-resource-title {
+        font-size: 13px; font-weight: 700; color: #E2E8F0;
+        display: flex; align-items: center; gap: 6px;
+      }
+      .sg-resource-meta {
+        font-size: 11px; color: #64748B; margin-top: 4px;
+        display: flex; align-items: center; gap: 6px;
+      }
+      .sg-resource-match {
+        background: linear-gradient(135deg, ${bc}, ${brandDark});
+        color: white; padding: 2px 8px; border-radius: 6px;
+        font-size: 10px; font-weight: 700;
+      }
 
-      /* Citation badge inline in bot message */
+      /* ─── Citation Badge ─── */
       .sg-citation {
-        display: inline-flex; align-items: center; gap: 4px;
-        background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 6px;
-        padding: 2px 8px; margin: 4px 2px; font-size: 11px; color: #4338ca;
-        font-weight: 600; cursor: default; vertical-align: middle;
-        transition: background 0.2s;
+        display: inline-flex; align-items: center; gap: 5px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 8px;
+        padding: 3px 10px; margin: 6px 2px 0; font-size: 11px;
+        color: #A5B4FC; font-weight: 600; cursor: default;
+        vertical-align: middle; transition: all 0.2s;
       }
-      .sg-citation:hover { background: #e0e7ff; }
-      .sg-citation-icon { font-size: 10px; }
-      .sg-citation-source { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .sg-citation-score { font-size: 10px; color: #6366f1; font-weight: 500; }
+      .sg-citation:hover { background: rgba(255,255,255,0.1); border-color: ${bc}44; }
+      .sg-citation-icon { font-size: 11px; }
+      .sg-citation-source {
+        max-width: 120px; overflow: hidden; text-overflow: ellipsis;
+        white-space: nowrap; color: #94A3B8;
+      }
+      .sg-citation-score { font-size: 10px; color: ${bc}; font-weight: 700; }
 
-      /* Video embed card */
+      /* ─── Video Card ─── */
       .sg-video-card {
-        margin-top: 8px; border-radius: 10px; overflow: hidden;
-        border: 1px solid #e2e8f0; background: #0f172a;
-        transition: transform 0.2s;
+        margin-top: 8px; border-radius: 14px; overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.06);
+        background: rgba(0,0,0,0.3);
+        transition: all 0.25s;
+        animation: sg-msg-in 0.3s ease-out;
       }
-      .sg-video-card:hover { transform: scale(1.01); }
+      .sg-video-card:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
       .sg-video-card iframe, .sg-video-card video {
-        width: 100%; height: 280px; border: none; display: block;
+        width: 100%; height: 220px; border: none; display: block;
       }
       .sg-video-card video { background: #000; object-fit: cover; }
       .sg-video-meta {
-        padding: 8px 12px; background: white;
-        display: flex; align-items: center; gap: 8px;
+        padding: 10px 14px; background: rgba(255,255,255,0.03);
+        display: flex; align-items: center; gap: 10px;
+        border-top: 1px solid rgba(255,255,255,0.04);
       }
-      .sg-video-icon { font-size: 16px; }
+      .sg-video-icon { font-size: 18px; }
       .sg-video-info { flex: 1; }
-      .sg-video-title { font-size: 12px; font-weight: 600; color: #1e293b; }
-      .sg-video-desc { font-size: 11px; color: #64748b; margin-top: 1px;
-        overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-      /* KB Resource link cards (for unqualified leads) */
-      .sg-kb-links { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
-      .sg-kb-link {
-        display: flex; align-items: center; gap: 8px;
-        padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0;
-        border-radius: 8px; text-decoration: none; color: #1e293b;
-        transition: all 0.2s; font-size: 13px;
+      .sg-video-title { font-size: 12px; font-weight: 700; color: #E2E8F0; }
+      .sg-video-desc {
+        font-size: 11px; color: #64748B; margin-top: 2px;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       }
-      .sg-kb-link:hover { background: #f0f4ff; border-color: ${config.brand_color}; transform: translateX(2px); }
-      .sg-kb-link-icon { font-size: 16px; flex-shrink: 0; }
-      .sg-kb-link-title { font-weight: 600; }
-      .sg-kb-link-desc { font-size: 11px; color: #64748b; margin-top: 1px; }
 
+      /* ─── KB Resource Links ─── */
+      .sg-kb-links {
+        margin-top: 8px; display: flex; flex-direction: column; gap: 6px;
+        animation: sg-msg-in 0.3s ease-out;
+      }
+      .sg-kb-link {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 14px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 12px; text-decoration: none; color: #E2E8F0;
+        transition: all 0.25s; font-size: 13px;
+      }
+      .sg-kb-link:hover {
+        background: rgba(255,255,255,0.08);
+        border-color: ${bc}44;
+        transform: translateX(3px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      }
+      .sg-kb-link-icon { font-size: 18px; flex-shrink: 0; }
+      .sg-kb-link-title { font-weight: 700; color: #E2E8F0; }
+      .sg-kb-link-desc { font-size: 11px; color: #64748B; margin-top: 2px; }
+
+      /* ─── Calendly ─── */
       .sg-calendly {
-        margin-top: 8px; padding: 12px; background: #ecfdf5;
-        border: 1px solid #6ee7b7; border-radius: 10px; text-align: center;
+        margin-top: 8px; padding: 16px;
+        background: rgba(16,185,129,0.08);
+        border: 1px solid rgba(16,185,129,0.15);
+        border-radius: 14px; text-align: center;
+        animation: sg-msg-in 0.3s ease-out;
       }
       .sg-calendly a {
-        display: inline-block; padding: 8px 20px; background: #10b981;
-        color: white; border-radius: 8px; font-weight: 600; font-size: 14px;
-        text-decoration: none; transition: background 0.2s;
+        display: inline-block; padding: 10px 24px;
+        background: linear-gradient(135deg, #10B981, #059669);
+        color: white; border-radius: 12px; font-weight: 700; font-size: 14px;
+        text-decoration: none; transition: all 0.25s;
+        box-shadow: 0 4px 16px rgba(16,185,129,0.3);
       }
-      .sg-calendly a:hover { background: #059669; }
+      .sg-calendly a:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(16,185,129,0.4);
+      }
 
+      /* ─── Input Area ─── */
       .sg-input-area {
-        padding: 12px 16px; border-top: 1px solid #e2e8f0;
-        display: flex; gap: 8px; background: white;
+        padding: 16px 18px; border-top: 1px solid rgba(255,255,255,0.04);
+        display: flex; gap: 10px; background: rgba(0,0,0,0.2);
       }
       .sg-input {
-        flex: 1; padding: 10px 14px; border: 1px solid #e2e8f0;
-        border-radius: 10px; font-size: 14px; outline: none;
-        font-family: inherit; background: #f8fafc;
-        transition: border-color 0.2s;
+        flex: 1; padding: 12px 16px;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 14px; font-size: 14px; outline: none;
+        font-family: inherit;
+        background: rgba(255,255,255,0.05);
+        color: #E2E8F0;
+        transition: all 0.25s;
       }
-      .sg-input:focus { border-color: ${config.brand_color}; }
-      .sg-input::placeholder { color: #94a3b8; }
+      .sg-input:focus {
+        border-color: ${bc}66;
+        background: rgba(255,255,255,0.08);
+        box-shadow: 0 0 0 3px ${bc}15;
+      }
+      .sg-input::placeholder { color: #4A5568; }
+
       .sg-mic {
-        width: 40px; height: 40px; border-radius: 10px;
-        background: transparent; border: 1px solid #e2e8f0; cursor: pointer;
+        width: 42px; height: 42px; border-radius: 12px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08);
+        cursor: pointer;
         display: flex; align-items: center; justify-content: center;
-        transition: all 0.2s; color: #94a3b8; flex-shrink: 0;
+        transition: all 0.25s; color: #4A5568; flex-shrink: 0;
       }
-      .sg-mic:hover { color: ${config.brand_color}; border-color: ${config.brand_color}; }
-      .sg-mic.sg-mic-active { color: #ef4444; border-color: #ef4444; background: #fef2f2; animation: sg-pulse 1.5s ease-in-out infinite; }
+      .sg-mic:hover {
+        color: ${bc}; border-color: ${bc}44;
+        background: ${bc}10;
+      }
+      .sg-mic.sg-mic-active {
+        color: #EF4444; border-color: #EF4444;
+        background: rgba(239,68,68,0.1);
+        animation: sg-pulse 1.5s ease-in-out infinite;
+      }
       @keyframes sg-pulse {
         0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); }
-        50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+        50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
       }
 
       .sg-send {
-        width: 40px; height: 40px; border-radius: 10px;
-        background: ${config.brand_color}; border: none; cursor: pointer;
+        width: 42px; height: 42px; border-radius: 12px;
+        background: linear-gradient(135deg, ${bc}, ${brandDark});
+        border: none; cursor: pointer;
         display: flex; align-items: center; justify-content: center;
-        transition: all 0.2s; color: white; flex-shrink: 0;
+        transition: all 0.25s; color: white; flex-shrink: 0;
+        box-shadow: 0 2px 12px ${brandGlow};
       }
-      .sg-send:hover { opacity: 0.9; transform: scale(1.05); }
-      .sg-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+      .sg-send:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 16px ${brandGlow};
+      }
+      .sg-send:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
 
+      /* ─── Powered By ─── */
       .sg-powered {
-        text-align: center; padding: 6px; font-size: 10px; color: #94a3b8;
-        background: white; border-top: 1px solid #f1f5f9;
+        text-align: center; padding: 8px; font-size: 10px; color: #4A5568;
+        background: rgba(0,0,0,0.2);
+        border-top: 1px solid rgba(255,255,255,0.03);
+        font-weight: 500; letter-spacing: 0.3px;
       }
-      .sg-powered a { color: #6366f1; text-decoration: none; font-weight: 600; }
+      .sg-powered a {
+        color: ${bc}; text-decoration: none; font-weight: 700;
+        transition: color 0.2s;
+      }
+      .sg-powered a:hover { color: #A5B4FC; }
 
+      /* ─── Mobile Responsive ─── */
       @media (max-width: 480px) {
         #sg-widget-panel {
           position: fixed !important; top: 0 !important; left: 0 !important;
           right: 0 !important; bottom: 0 !important;
           width: 100% !important; max-height: 100% !important;
+          height: 100% !important;
           border-radius: 0 !important;
         }
         #sg-widget-panel .sg-messages { max-height: none; }
@@ -262,23 +569,22 @@
 
   // ── Build DOM ──
   function buildWidget() {
-    // Container
     const container = document.createElement("div");
     container.id = "sg-widget-container";
 
     // Panel
     const panel = document.createElement("div");
     panel.id = "sg-widget-panel";
-    panel.style[config.position] = "20px";
+    panel.style[config.position] = "24px";
     panel.innerHTML = `
       <div class="sg-header">
         <div class="sg-header-avatar">SG</div>
         <div class="sg-header-info">
           <div class="sg-header-name">${escapeHtml(config.bot_name)}</div>
-          <div class="sg-header-status">● Online</div>
+          <div class="sg-header-status">Online</div>
         </div>
         <button class="sg-close-btn" id="sg-close">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
@@ -306,7 +612,7 @@
     // FAB
     const fab = document.createElement("button");
     fab.id = "sg-widget-fab";
-    fab.style[config.position] = "20px";
+    fab.style[config.position] = "24px";
     fab.innerHTML = `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -346,18 +652,18 @@
     const fab = document.getElementById("sg-widget-fab");
     if (isOpen) {
       panel.classList.add("sg-open");
-      fab.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+      fab.innerHTML = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
       if (messages.length === 0) {
         addBotMessage(config.greeting);
       }
       document.getElementById("sg-input").focus();
     } else {
       panel.classList.remove("sg-open");
-      fab.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+      fab.innerHTML = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
     }
   }
 
-  // ── Voice Input (Web Speech API) ──
+  // ── Voice Input ──
   function startVoiceInput() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -372,7 +678,6 @@
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    // Visual feedback — mic turns red while listening
     mic.classList.add("sg-mic-active");
     input.placeholder = "🎤 Listening...";
 
@@ -396,6 +701,101 @@
 
     recognition.start();
   }
+
+  // ── Markdown + LaTeX Renderer ──
+  function renderMarkdown(text) {
+    let html = text;
+
+    // ── LaTeX: block math $$...$$ ──
+    html = html.replace(/\$\$([^$]+?)\$\$/g, (_, tex) => {
+      return `<div class="sg-math-block">${renderTeX(tex.trim(), true)}</div>`;
+    });
+
+    // ── LaTeX: inline math $...$ (not $$) ──
+    html = html.replace(/(?<!\$)\$(?!\$)([^$\n]+?)\$(?!\$)/g, (_, tex) => {
+      return `<span class="sg-math-inline">${renderTeX(tex.trim(), false)}</span>`;
+    });
+
+    // ── Code blocks ```...``` ──
+    html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+      return `<pre><code>${escapeHtml(code.trim())}</code></pre>`;
+    });
+
+    // ── Inline code `...` ──
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // ── Tables ──
+    html = html.replace(/((?:\|.+\|\n?)+)/g, (match) => {
+      const rows = match.trim().split('\n').filter(r => r.trim());
+      if (rows.length < 2) return match;
+      const headerCells = rows[0].split('|').filter(c => c.trim());
+      // Check if row 2 is a separator
+      const isSeparator = rows[1] && /^\|?[\s-:|]+\|?$/.test(rows[1]);
+      const dataStart = isSeparator ? 2 : 1;
+
+      let table = '<table><thead><tr>';
+      headerCells.forEach(c => { table += `<th>${c.trim()}</th>`; });
+      table += '</tr></thead><tbody>';
+      for (let i = dataStart; i < rows.length; i++) {
+        const cells = rows[i].split('|').filter(c => c.trim());
+        table += '<tr>';
+        cells.forEach(c => { table += `<td>${c.trim()}</td>`; });
+        table += '</tr>';
+      }
+      table += '</tbody></table>';
+      return table;
+    });
+
+    // ── Blockquotes ──
+    html = html.replace(/^>\s*(.+)$/gm, '<blockquote>$1</blockquote>');
+
+    // ── Headers ──
+    html = html.replace(/^####\s*(.+)$/gm, '<h4>$1</h4>');
+    html = html.replace(/^###\s*(.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^##\s*(.+)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^#\s*(.+)$/gm, '<h1>$1</h1>');
+
+    // ── Horizontal rules ──
+    html = html.replace(/^---$/gm, '<hr/>');
+
+    // ── Bold (**text** or __text__) ──
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+
+    // ── Italic (*text* or _text_) ──
+    html = html.replace(/\*([^*]+?)\*/g, '<em>$1</em>');
+    html = html.replace(/_([^_]+?)_/g, '<em>$1</em>');
+
+    // ── Unordered lists ──
+    html = html.replace(/^[-*]\s+(.+)$/gm, '<li>$1</li>');
+    html = html.replace(/((?:<li>.+<\/li>\n?)+)/g, '<ul>$1</ul>');
+
+    // ── Ordered lists ──
+    html = html.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+
+    // ── Line breaks — double newlines to paragraph breaks ──
+    html = html.replace(/\n\n/g, '<br/><br/>');
+    html = html.replace(/\n/g, '<br/>');
+
+    return html;
+  }
+
+  function renderTeX(tex, displayMode) {
+    if (!katexLoaded || !window.katex) {
+      // Fallback: show raw LaTeX in a styled code block
+      return `<code style="color:#A5B4FC;background:rgba(255,255,255,0.06);padding:4px 8px;border-radius:6px;font-family:monospace;">${escapeHtml(tex)}</code>`;
+    }
+    try {
+      return window.katex.renderToString(tex, {
+        displayMode: displayMode,
+        throwOnError: false,
+        output: "htmlAndMathml",
+      });
+    } catch (e) {
+      return `<code>${escapeHtml(tex)}</code>`;
+    }
+  }
+
   // ── Send Message ──
   async function sendMessage() {
     const input = document.getElementById("sg-input");
@@ -416,7 +816,6 @@
       });
 
       removeTyping();
-
       if (!res.ok) throw new Error("Chat request failed");
 
       const data = await res.json();
@@ -425,12 +824,10 @@
 
       addBotMessage(data.reply, data.resource);
 
-      // Show resource card if KB matched (citation)
       if (data.resource) {
         addResourceCard(data.resource);
       }
 
-      // Show video and link resources from kb_resources
       if (data.kb_resources && data.kb_resources.length > 0) {
         const videos = data.kb_resources.filter(r => r.type === 'video');
         const links = data.kb_resources.filter(r => r.type !== 'video');
@@ -438,7 +835,6 @@
         if (links.length > 0) addKBResourceLinks(links);
       }
 
-      // Show Calendly if triggered
       if (data.show_calendly && data.calendly_link) {
         addCalendlyCard(data.calendly_link);
       }
@@ -472,10 +868,10 @@
     const el = document.createElement("div");
     el.className = "sg-msg sg-msg-bot";
 
-    // Format reply with citation badges if KB resource was used
-    let formattedText = escapeHtml(text);
+    // Render with markdown + LaTeX
+    let formattedText = renderMarkdown(text);
+
     if (resource && resource.source_file) {
-      // Add inline citation badge at end of message
       const citationBadge = `<span class="sg-citation">` +
         `<span class="sg-citation-icon">📎</span>` +
         `<span class="sg-citation-source">${escapeHtml(resource.source_file)}</span>` +
@@ -499,8 +895,8 @@
     el.innerHTML = `
       <div class="sg-resource-title">📄 ${escapeHtml(resource.title)}</div>
       <div class="sg-resource-meta">
-        <span>Source: ${escapeHtml(resource.source_file)}</span>
-        <span style="margin-left:6px;background:#6366f1;color:white;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;">${resource.relevance_score}% match</span>
+        <span>${escapeHtml(resource.source_file)}</span>
+        <span class="sg-resource-match">${resource.relevance_score}% match</span>
       </div>
     `;
     container.appendChild(el);
@@ -515,50 +911,36 @@
     let embedHtml = '';
     const url = resource.url || '';
 
-    // YouTube embed
     const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
     if (ytMatch) {
       embedHtml = `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?rel=0" allowfullscreen loading="lazy"></iframe>`;
-    }
-    // Vimeo embed
-    else if (url.includes('vimeo.com')) {
+    } else if (url.includes('vimeo.com')) {
       const vimeoId = url.match(/vimeo\.com\/(\d+)/);
       if (vimeoId) {
         embedHtml = `<iframe src="https://player.vimeo.com/video/${vimeoId[1]}" allowfullscreen loading="lazy"></iframe>`;
       }
-    }
-    // Loom embed
-    else if (url.includes('loom.com')) {
+    } else if (url.includes('loom.com')) {
       const loomId = url.match(/loom\.com\/share\/(\w+)/);
       if (loomId) {
         embedHtml = `<iframe src="https://www.loom.com/embed/${loomId[1]}" allowfullscreen loading="lazy"></iframe>`;
       }
-    }
-    // Google Drive embed — use proper embed player URL
-    else if (url.includes('drive.google.com')) {
+    } else if (url.includes('drive.google.com')) {
       const driveMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
       if (driveMatch) {
         embedHtml = `<iframe src="https://drive.google.com/file/d/${driveMatch[1]}/preview" allow="autoplay; encrypted-media" allowfullscreen loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>`;
       } else {
-        // Fallback: open externally
-        embedHtml = `<div style="padding:20px;text-align:center;background:#1e293b;">
-          <a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="color:#818cf8;font-size:14px;font-weight:600;text-decoration:none;">▶ Open Video in Google Drive</a>
+        embedHtml = `<div style="padding:24px;text-align:center;">
+          <a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="color:#A5B4FC;font-size:14px;font-weight:600;text-decoration:none;">▶ Open Video in Google Drive</a>
         </div>`;
       }
-    }
-    // Dropbox — convert share link to raw playable URL
-    else if (url.includes('dropbox.com')) {
+    } else if (url.includes('dropbox.com')) {
       const rawUrl = url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '').replace('?dl=1', '');
       embedHtml = `<video controls preload="metadata"><source src="${escapeHtml(rawUrl)}"></video>`;
-    }
-    // Direct video URL (.mp4, .webm, .ogg or Supabase storage URLs)
-    else if (url.match(/\.(mp4|webm|ogg)($|\?)/i) || url.includes('supabase.co/storage')) {
+    } else if (url.match(/\.(mp4|webm|ogg)($|\?)/i) || url.includes('supabase.co/storage')) {
       embedHtml = `<video controls preload="metadata"><source src="${escapeHtml(url)}"></video>`;
-    }
-    // Fallback: clickable link to watch externally
-    else {
+    } else {
       embedHtml = `<div style="padding:30px;text-align:center;">
-        <a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="color:#6366f1;font-size:14px;font-weight:600;text-decoration:none;">▶ Watch Video</a>
+        <a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="color:#A5B4FC;font-size:14px;font-weight:600;text-decoration:none;">▶ Watch Video</a>
       </div>`;
     }
 
@@ -607,7 +989,7 @@
     const el = document.createElement("div");
     el.className = "sg-calendly";
     el.innerHTML = `
-      <div style="font-size:13px;color:#065f46;margin-bottom:8px;">Ready to chat with our team?</div>
+      <div style="font-size:13px;color:#6EE7B7;margin-bottom:10px;font-weight:600;">Ready to chat with our team?</div>
       <a href="${escapeHtml(link)}" target="_blank" rel="noopener">📅 Book a Call</a>
     `;
     container.appendChild(el);
@@ -647,7 +1029,7 @@
   async function init() {
     injectStyles();
     buildWidget();
-    await fetchConfig();
+    await Promise.all([fetchConfig(), loadKaTeX()]);
   }
 
   if (document.readyState === "loading") {

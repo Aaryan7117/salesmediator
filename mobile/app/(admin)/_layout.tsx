@@ -1,13 +1,16 @@
 /**
- * Admin tab layout — bottom tab navigator with 5 tabs.
+ * Admin tab layout — bottom tab navigator with 6 tabs.
+ * Live Monitor is the first tab with an unread notification badge.
  */
 
 import { Tabs } from "expo-router";
 import { Text, View, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useAuthStore } from "@/store/authStore";
+import { useNotificationStore } from "@/store/notificationStore";
 
 export default function AdminLayout() {
   const logout = useAuthStore((s) => s.logout);
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
 
   const handleLogout = () => {
     logout();
@@ -37,6 +40,24 @@ export default function AdminLayout() {
         ),
       }}
     >
+      <Tabs.Screen
+        name="live"
+        options={{
+          title: "Live",
+          tabBarIcon: ({ color, focused }) => (
+            <View>
+              <Text style={{ fontSize: 20, color }}>📡</Text>
+              {unreadCount > 0 && (
+                <View style={badgeStyles.badge}>
+                  <Text style={badgeStyles.badgeText}>
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </View>
+          ),
+        }}
+      />
       <Tabs.Screen
         name="index"
         options={{
@@ -73,6 +94,30 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen name="leads/[id]" options={{ href: null }} />
+      <Tabs.Screen name="components/NotificationBanner" options={{ href: null }} />
     </Tabs>
   );
 }
+
+const badgeStyles = StyleSheet.create({
+  badge: {
+    position: "absolute",
+    top: -4,
+    right: -10,
+    backgroundColor: "#EF4444",
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: "#000000",
+  },
+  badgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "900",
+    lineHeight: 12,
+  },
+});
