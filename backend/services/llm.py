@@ -181,8 +181,17 @@ async def generate_reply(
             temperature=0.4,
         )
         reply = response.choices[0].message.content.strip()
-        logger.info(f"Groq replied successfully: {reply[:80]}...")
-        return reply
+
+        # Extract token usage for monitoring
+        usage = response.usage
+        token_info = {
+            "prompt_tokens": usage.prompt_tokens if usage else 0,
+            "completion_tokens": usage.completion_tokens if usage else 0,
+            "total_tokens": usage.total_tokens if usage else 0,
+            "model": settings.groq_model,
+        }
+        logger.info(f"Groq replied: {reply[:80]}... | tokens: {token_info['total_tokens']}")
+        return {"reply": reply, "token_usage": token_info}
     except Exception as exc:
         logger.error(f"Groq API error: {type(exc).__name__}: {exc}")
         raise

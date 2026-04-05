@@ -259,8 +259,9 @@ async def chat_with_org(org_slug: str, body: ChatMessageRequest, request: Reques
     logger.info(f"📎 KB resources available: {len(kb_resources_list)} for org {org_id}")
 
     # 9. Generate AI reply with qualification-aware guidance
+    token_usage = None
     try:
-        reply = await generate_reply(
+        llm_result = await generate_reply(
             message=message,
             conversation_history=conversation,
             org_name=org_name,
@@ -275,12 +276,30 @@ async def chat_with_org(org_slug: str, body: ChatMessageRequest, request: Reques
             persona=persona,
             conversation_summary=conv_summary,
         )
+        reply = llm_result["reply"]
+        token_usage = llm_result.get("token_usage")
     except Exception as exc:
         logger.error(f"LLM generate_reply FAILED: {type(exc).__name__}: {exc}")
         reply = (
             f"I apologize, but I'm having trouble generating a response right now. "
             f"Please try again in a moment."
         )
+
+    # Log token usage for the Usage Monitor
+    if token_usage:
+        try:
+            sb.table("usage_logs").insert({
+                "org_id": org_id,
+                "session_id": session_id,
+                "model": token_usage.get("model", "unknown"),
+                "prompt_tokens": token_usage.get("prompt_tokens", 0),
+                "completion_tokens": token_usage.get("completion_tokens", 0),
+                "total_tokens": token_usage.get("total_tokens", 0),
+                "endpoint": "chat",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }).execute()
+        except Exception as exc:
+            logger.warning(f"Usage log insert failed (non-fatal): {exc}")
 
     # Add AI reply to conversation
     conversation.append({"role": "assistant", "content": reply, "timestamp": datetime.now(timezone.utc).isoformat()})

@@ -15,6 +15,7 @@ import Integrations from './pages/Integrations'
 import QualificationSettings from './pages/QualificationSettings'
 import Team from './pages/Team'
 import Onboarding from './pages/Onboarding'
+import UsageMonitor from './pages/UsageMonitor'
 
 // ── API Config ──
 // In development: defaults to localhost. In production: set VITE_API_URL in .env
@@ -103,6 +104,7 @@ function App() {
             <Route path="qualification" element={<QualificationSettings />} />
             <Route path="integrations" element={<Integrations />} />
             <Route path="team" element={<Team />} />
+            <Route path="usage" element={<UsageMonitor />} />
           </Route>
 
           {/* Onboarding */}
