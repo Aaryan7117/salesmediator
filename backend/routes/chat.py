@@ -212,23 +212,25 @@ async def chat_with_org(org_slug: str, body: ChatMessageRequest, request: Reques
         # Just qualified! Trigger tools
         logger.info(f"🟢 Lead QUALIFIED: {session_id[:12]}...")
 
-        # Draft confirmation email
+        # Draft meeting confirmation email (includes Calendly + Google Meet info)
         try:
             drafted_email = await draft_confirmation_email(
                 checklist=updated_checklist,
                 org_name=org_name,
                 groq_api_key=settings.groq_api_key,
+                calendly_link=calendly_link,
             )
         except Exception as exc:
             logger.warning(f"Email drafting failed (non-fatal): {exc}")
 
-        # Actually send the email via EmailJS
+        # Send confirmation email to the VISITOR + notify admin
         if drafted_email:
             try:
                 await send_email_via_emailjs(
                     checklist=updated_checklist,
                     email_body=drafted_email,
                     org_name=org_name,
+                    send_to_client=True,
                 )
             except Exception as exc:
                 logger.warning(f"EmailJS send failed (non-fatal): {exc}")
