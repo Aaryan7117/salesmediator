@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 # ── Default criteria (used when org hasn't configured custom ones) ──
 # Only text fields required by default. Numeric conditions (company_size,
 # timeline) are optional — orgs add them via the qualification_criteria table.
-DEFAULT_REQUIRED_FIELDS = ["name", "company", "role", "use_case"]
+DEFAULT_REQUIRED_FIELDS = ["name", "email", "company", "role", "use_case"]
 DEFAULT_CONDITIONS: list[dict] = []  # No numeric gates by default
 
 # ── Regex pre-extractors (fast, no LLM call needed) ──
@@ -82,6 +82,7 @@ Latest message from visitor: "{message}"
 
 Extract ONLY NEW information mentioned in the latest message. Return a JSON object with these fields (set to null if NOT mentioned in this message):
 - "name": string or null (the visitor's personal name)
+- "email": string or null (email address, e.g. "john@acme.com")
 - "company": string or null (company/organization name)
 - "role": string or null (job title or role)
 - "use_case": string or null (what they need the product for)
@@ -93,6 +94,7 @@ RULES:
 - Only extract what is EXPLICITLY stated, never infer or guess
 - If they say "I'm John from Acme", extract name="John", company="Acme"
 - If they say "we have 200 people", extract company_size=200
+- If they say "my email is john@acme.com", extract email="john@acme.com"
 - Return ONLY the JSON object, no explanation
 """
 
