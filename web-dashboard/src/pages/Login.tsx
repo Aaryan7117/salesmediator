@@ -48,7 +48,7 @@ export default function Login() {
     <div className="auth-page">
       <div className="auth-card animate-fade-in">
         <div className="auth-logo">
-          <div className="sidebar-logo-icon" style={{ width: 44, height: 44, fontSize: 18 }}>SG</div>
+          <img src="/salesgen-icon.png" alt="SalesGen" style={{ width: 44, height: 44, borderRadius: 10 }} />
         </div>
         <h1 className="auth-title">Welcome back</h1>
         <p className="auth-subtitle">Sign in to your SalesGen dashboard</p>

@@ -7,7 +7,7 @@ export default function LandingPage() {
       {/* ── Navbar ── */}
       <nav className="landing-nav">
         <Link to="/" className="landing-nav-brand">
-          <div className="landing-nav-brand-icon">SG</div>
+          <img src="/salesgen-icon.png" alt="SalesGen" style={{ width: 32, height: 32, borderRadius: 8 }} />
           <span className="landing-nav-brand-text">SalesGen</span>
         </Link>
 

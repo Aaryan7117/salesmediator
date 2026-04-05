@@ -280,10 +280,18 @@ async def chat_with_org(org_slug: str, body: ChatMessageRequest, request: Reques
         token_usage = llm_result.get("token_usage")
     except Exception as exc:
         logger.error(f"LLM generate_reply FAILED: {type(exc).__name__}: {exc}")
-        reply = (
-            f"I apologize, but I'm having trouble generating a response right now. "
-            f"Please try again in a moment."
-        )
+        error_str = str(exc).lower()
+        if "rate" in error_str or "429" in error_str or "too many" in error_str:
+            reply = (
+                "I'm experiencing high demand right now. 🔄 "
+                "Please wait a few seconds and try your message again — "
+                "I'll be right back!"
+            )
+        else:
+            reply = (
+                "I apologize, but I'm having trouble generating a response right now. "
+                "Please try again in a moment."
+            )
 
     # Log token usage for the Usage Monitor
     if token_usage:

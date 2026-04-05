@@ -122,6 +122,35 @@
         background: white; color: #1e293b;
         border: 1px solid #e2e8f0; border-bottom-left-radius: 4px;
       }
+      /* Markdown formatted bot messages */
+      .sg-msg-bot .sg-msg-bubble strong { font-weight: 700; color: #0f172a; }
+      .sg-msg-bot .sg-msg-bubble em { font-style: italic; color: #475569; }
+      .sg-msg-bot .sg-msg-bubble code {
+        background: #f1f5f9; padding: 1px 5px; border-radius: 4px;
+        font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px;
+        color: #6366f1; border: 1px solid #e2e8f0;
+      }
+      .sg-msg-bot .sg-msg-bubble ul, .sg-msg-bot .sg-msg-bubble ol {
+        margin: 6px 0 6px 8px; padding-left: 16px;
+      }
+      .sg-msg-bot .sg-msg-bubble li {
+        margin: 3px 0; line-height: 1.5; font-size: 13.5px;
+      }
+      .sg-msg-bot .sg-msg-bubble ul li { list-style: disc; }
+      .sg-msg-bot .sg-msg-bubble ol li { list-style: decimal; }
+      .sg-msg-bot .sg-msg-bubble p {
+        margin: 0 0 6px 0; line-height: 1.55;
+      }
+      .sg-msg-bot .sg-msg-bubble p:last-child { margin-bottom: 0; }
+      .sg-msg-bot .sg-msg-bubble a {
+        color: ${config.brand_color}; text-decoration: underline;
+        font-weight: 500;
+      }
+      .sg-msg-bot .sg-msg-bubble a:hover { opacity: 0.8; }
+      .sg-msg-bot .sg-msg-bubble h3, .sg-msg-bot .sg-msg-bubble h4 {
+        font-size: 13.5px; font-weight: 700; margin: 8px 0 4px 0;
+        color: #0f172a;
+      }
       .sg-msg-avatar {
         width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
         display: flex; align-items: center; justify-content: center;
@@ -472,10 +501,9 @@
     const el = document.createElement("div");
     el.className = "sg-msg sg-msg-bot";
 
-    // Format reply with citation badges if KB resource was used
-    let formattedText = escapeHtml(text);
+    // Render markdown for bot replies
+    let formattedText = markdownToHtml(text);
     if (resource && resource.source_file) {
-      // Add inline citation badge at end of message
       const citationBadge = `<span class="sg-citation">` +
         `<span class="sg-citation-icon">📎</span>` +
         `<span class="sg-citation-source">${escapeHtml(resource.source_file)}</span>` +
@@ -641,6 +669,75 @@
     const div = document.createElement("div");
     div.textContent = str;
     return div.innerHTML;
+  }
+
+  /**
+   * Lightweight Markdown → HTML converter for bot messages.
+   * Supports: **bold**, *italic*, `code`, bullet lists, numbered lists,
+   * [links](url), headings (### / ####), and paragraph breaks.
+   */
+  function markdownToHtml(text) {
+    if (!text) return '';
+    let html = escapeHtml(text);
+
+    // Bold: **text** or __text__
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+
+    // Italic: *text* or _text_ (but not inside **/__ )
+    html = html.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+
+    // Inline code: `code`
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // Links: [text](url)
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+    // Headings: ### or ####
+    html = html.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
+    html = html.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
+
+    // Process lines for lists and paragraphs
+    const lines = html.split('\n');
+    let result = [];
+    let inUl = false;
+    let inOl = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      // Unordered list: - item or • item or * item (at start)
+      const ulMatch = line.match(/^[-•\*]\s+(.+)/);
+      // Ordered list: 1. item, 2. item
+      const olMatch = line.match(/^\d+\.\s+(.+)/);
+
+      if (ulMatch) {
+        if (inOl) { result.push('</ol>'); inOl = false; }
+        if (!inUl) { result.push('<ul>'); inUl = true; }
+        result.push(`<li>${ulMatch[1]}</li>`);
+      } else if (olMatch) {
+        if (inUl) { result.push('</ul>'); inUl = false; }
+        if (!inOl) { result.push('<ol>'); inOl = true; }
+        result.push(`<li>${olMatch[1]}</li>`);
+      } else {
+        if (inUl) { result.push('</ul>'); inUl = false; }
+        if (inOl) { result.push('</ol>'); inOl = false; }
+        if (line === '') {
+          // Empty line = paragraph break (skip consecutive empties)
+          if (result.length > 0 && result[result.length - 1] !== '<br>') {
+            result.push('<br>');
+          }
+        } else if (line.startsWith('<h')) {
+          result.push(line);
+        } else {
+          result.push(`<p>${line}</p>`);
+        }
+      }
+    }
+    if (inUl) result.push('</ul>');
+    if (inOl) result.push('</ol>');
+
+    return result.join('');
   }
 
   // ── Init ──

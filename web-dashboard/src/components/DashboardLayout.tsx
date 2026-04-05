@@ -44,7 +44,7 @@ export default function DashboardLayout() {
     <div className="app-layout">
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <div className="sidebar-logo-icon">SG</div>
+          <img src="/salesgen-icon.png" alt="SalesGen" style={{ width: 32, height: 32, borderRadius: 8 }} />
           <span className="sidebar-logo-text">SalesGen</span>
         </div>
 

@@ -55,7 +55,7 @@ export default function Signup() {
     <div className="auth-page">
       <div className="auth-card animate-fade-in">
         <div className="auth-logo">
-          <div className="sidebar-logo-icon" style={{ width: 44, height: 44, fontSize: 18 }}>SG</div>
+          <img src="/salesgen-icon.png" alt="SalesGen" style={{ width: 44, height: 44, borderRadius: 10 }} />
         </div>
         <h1 className="auth-title">Create your account</h1>
         <p className="auth-subtitle">Get your AI sales agent running in 2 minutes</p>
