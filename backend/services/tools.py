@@ -132,7 +132,7 @@ async def send_email_via_emailjs(
         }
         async with httpx.AsyncClient(timeout=10) as http_client:
             resp = await http_client.post(
-                "https://api.emailjs.com/api/v1.6/email/send",
+                "https://api.emailjs.com/api/v1.0/email/send",
                 json=payload,
                 headers={"Content-Type": "application/json"},
             )
@@ -166,7 +166,7 @@ async def send_email_via_emailjs(
                         },
                     }
                     resp2 = await http_client.post(
-                        "https://api.emailjs.com/api/v1.6/email/send",
+                        "https://api.emailjs.com/api/v1.0/email/send",
                         json=admin_payload,
                         headers={"Content-Type": "application/json"},
                     )
